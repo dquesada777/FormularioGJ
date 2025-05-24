@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h1>Gestión de Usuarios</h1>
+    <div class="mb-3">
+        <a href="{{ url_for('main.new_user') }}" class="btn btn-primary">Nuevo Usuario</a>
+    </div>
+    
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Usuario</th>
+                <th>Administrador</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+            <tr>
+                <td>{{ user.id }}</td>
+                <td>{{ user.username }}</td>
+                <td>{% if user.is_admin %}Sí{% else %}No{% endif %}</td>
+                <td>
+                    <a href="{{ url_for('main.edit_user', id=user.id) }}" class="btn btn-sm btn-warning">Editar</a>
+                    <form action="{{ url_for('main.delete_user', id=user.id) }}" method="post" class="d-inline">
+                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('¿Estás seguro de eliminar este usuario?')">Eliminar</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

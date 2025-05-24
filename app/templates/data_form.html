@@ -1,0 +1,372 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10 col-lg-9">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-primary text-white">
+                <h3 class="mb-0">{{ title }}</h3>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('main.submit_data') }}" novalidate>
+                    {{ form.hidden_tag() }} <!-- CSRF Token -->
+
+                    <h5 class="mt-3">Información del Inmueble</h5>
+                    <hr>
+                        <div class="mb-3">
+                            {{ form.copropiedad.label(class="form-label") }}
+                            {{ form.copropiedad(class="form-control") }}
+                            {% if form.copropiedad.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.copropiedad.errors %}
+                                        {{ error }}
+                                     {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            {{ form.inmueble.label(class="form-label") }}
+                            {{ form.inmueble(class="form-control" + (" is-invalid" if form.inmueble.errors else "")) }}
+                            {% for error in form.inmueble.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.modelo.label(class="form-label") }}
+                            {{ form.modelo(class="form-control" + (" is-invalid" if form.modelo.errors else "")) }}
+                            {% for error in form.modelo.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <div class="form-check mt-4 pt-2">
+                                {{ form.principal(class="form-check-input" + (" is-invalid" if form.principal.errors else "")) }}
+                                {{ form.principal.label(class="form-check-label") }}
+                                {% for error in form.principal.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            {{ form.agrupar_por.label(class="form-label") }}
+                            {{ form.agrupar_por(class="form-control" + (" is-invalid" if form.agrupar_por.errors else "")) }}
+                            {% for error in form.agrupar_por.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            {{ form.matricula.label(class="form-label") }}
+                            {{ form.matricula(class="form-control" + (" is-invalid" if form.matricula.errors else "")) }}
+                            {% for error in form.matricula.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+                        </div>
+                        <div class="col-md-4">
+                            {{ form.telefono.label(class="form-label") }}
+                            {{ form.telefono(class="form-control" + (" is-invalid" if form.telefono.errors else "")) }}
+                            {% for error in form.telefono.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+                        </div>
+                        <div class="col-md-4">
+                            {{ form.coeficiente.label(class="form-label") }}
+                            {{ form.coeficiente(class="form-control" + (" is-invalid" if form.coeficiente.errors else "")) }}
+                            {% for error in form.coeficiente.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+                        </div>
+                        
+                    </div>
+
+                    <h5 class="mt-4">Información del Propietario/Responsable</h5>
+                    <hr>
+                    <div class="mb-3">
+                        {{ form.tipo_persona.label(class="form-label") }}
+                        {{ form.tipo_persona(class="form-select" + (" is-invalid" if form.tipo_persona.errors else ""), onchange="togglePersonFields()") }}
+                        {% for error in form.tipo_persona.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+                    </div>
+
+                    <div id="personaNaturalFields">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                {{ form.primer_nombre.label(class="form-label") }}
+                                {{ form.primer_nombre(class="form-control" + (" is-invalid" if form.primer_nombre.errors else "")) }}
+                                {% for error in form.primer_nombre.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+                            </div>
+                            <div class="col-md-6">
+                                {{ form.segundo_nombre.label(class="form-label") }}
+                                {{ form.segundo_nombre(class="form-control" + (" is-invalid" if form.segundo_nombre.errors else "")) }}
+                                {% for error in form.segundo_nombre.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                {{ form.primer_apellido.label(class="form-label") }}
+                                {{ form.primer_apellido(class="form-control" + (" is-invalid" if form.primer_apellido.errors else "")) }}
+                                {% for error in form.primer_apellido.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+                            </div>
+                            <div class="col-md-6">
+                                {{ form.segundo_apellido.label(class="form-label") }}
+                                {{ form.segundo_apellido(class="form-control" + (" is-invalid" if form.segundo_apellido.errors else "")) }}
+                                {% for error in form.segundo_apellido.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="personaJuridicaFields" style="display:none;">
+                        <div class="mb-3">
+                            {{ form.razon_social.label(class="form-label") }}
+                            {{ form.razon_social(class="form-control" + (" is-invalid" if form.razon_social.errors else "")) }}
+                            {% for error in form.razon_social.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+                        </div>
+                    </div>
+
+                    <h5 class="mt-4">Identificación y Contacto</h5>
+                    <hr>
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            {{ form.tipo_id.label(class="form-label") }}
+                            {{ form.tipo_id(class="form-select" + (" is-invalid" if form.tipo_id.errors else "")) }}
+                            {% for error in form.tipo_id.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+                        </div>
+                        <div class="col-md-5">
+                            {{ form.identificacion.label(class="form-label") }}
+                            {{ form.identificacion(class="form-control" + (" is-invalid" if form.identificacion.errors else "")) }}
+                            {% for error in form.identificacion.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+                        </div>
+                        <div class="col-md-3">
+                            {{ form.dv.label(class="form-label") }}
+                            {{ form.dv(class="form-control" + (" is-invalid" if form.dv.errors else "")) }}
+                            {% for error in form.dv.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form.email.label(class="form-label") }}
+                        {{ form.email(class="form-control" + (" is-invalid" if form.email.errors else ""), placeholder="su@correo.com") }}
+                        {% for error in form.email.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.direccion.label(class="form-label") }}
+                        {{ form.direccion(class="form-control" + (" is-invalid" if form.direccion.errors else ""), rows="3") }}
+                        {% for error in form.direccion.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+                    </div>
+
+                   <!-- Sección de Información Financiera -->
+                    <h3 class="mt-4">Información Financiera</h3>
+                    <div class="row">
+                     <div class="col-md-6">
+                    <div class="mb-3">
+                     {{ form.fecha_inicio_facturacion.label(class="form-label") }}
+                     {{ form.fecha_inicio_facturacion(class="form-control", type="date") }}
+                     {% if form.fecha_inicio_facturacion.errors %}
+                <div class="invalid-feedback">
+                    {% for error in form.fecha_inicio_facturacion.errors %}
+                        {{ error }}
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="mb-3">
+            {{ form.fecha_ingreso.label(class="form-label") }}
+            {{ form.fecha_ingreso(class="form-control", type="date") }}
+            {% if form.fecha_ingreso.errors %}
+                <div class="invalid-feedback">
+                    {% for error in form.fecha_ingreso.errors %}
+                        {{ error }}
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="mb-3">
+            {{ form.periodo_de_gracia.label(class="form-label") }}
+            {{ form.periodo_de_gracia(class="form-control") }}
+            {% if form.periodo_de_gracia.errors %}
+                <div class="invalid-feedback">
+                    {% for error in form.periodo_de_gracia.errors %}
+                        {{ error }}
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="mb-3">
+            {{ form.valor_a_pagar_inmueble.label(class="form-label") }}
+            {{ form.valor_a_pagar_inmueble(class="form-control") }}
+            {% if form.valor_a_pagar_inmueble.errors %}
+                <div class="invalid-feedback">
+                    {% for error in form.valor_a_pagar_inmueble.errors %}
+                        {{ error }}
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="mb-3">
+            {{ form.valor_presupuesto.label(class="form-label") }}
+            {{ form.valor_presupuesto(class="form-control") }}
+            {% if form.valor_presupuesto.errors %}
+                <div class="invalid-feedback">
+                    {% for error in form.valor_presupuesto.errors %}
+                        {{ error }}
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="mb-3">
+            {{ form.valor_a_pagar_constructora.label(class="form-label") }}
+            {{ form.valor_a_pagar_constructora(class="form-control") }}
+            {% if form.valor_a_pagar_constructora.errors %}
+                <div class="invalid-feedback">
+                    {% for error in form.valor_a_pagar_constructora.errors %}
+                        {{ error }}
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="mb-3">
+            {{ form.valor_a_pagar_propietario.label(class="form-label") }}
+            {{ form.valor_a_pagar_propietario(class="form-control") }}
+            {% if form.valor_a_pagar_propietario.errors %}
+                <div class="invalid-feedback">
+                    {% for error in form.valor_a_pagar_propietario.errors %}
+                        {{ error }}
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+       
+</div>
+
+
+                    <div class="d-grid mt-4">
+                        {{ form.submit(class="btn btn-primary btn-lg") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Añadido:los calculos, justo antes de cerrar el bloque content -->
+{% block scripts_extra %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Referencias a los campos del formulario
+    const fechaIngreso = document.getElementById('fecha_ingreso');
+    const periodoGracia = document.getElementById('periodo_de_gracia');
+    const fechaInicioFacturacion = document.getElementById('fecha_inicio_facturacion');
+    
+    const coeficiente = document.getElementById('coeficiente');
+    const valorPresupuesto = document.getElementById('valor_presupuesto');
+    const valorPagarInmueble = document.getElementById('valor_a_pagar_inmueble');
+    
+    const valorPagarConstructora = document.getElementById('valor_a_pagar_constructora');
+    const valorPagarPropietario = document.getElementById('valor_a_pagar_propietario');
+
+    // Función para calcular la fecha de inicio de facturación
+    function calcularFechaInicioFacturacion() {
+        if (fechaIngreso.value && periodoGracia.value) {
+            const fecha = new Date(fechaIngreso.value);
+            fecha.setDate(fecha.getDate() + parseInt(periodoGracia.value));
+            
+            // Formatear la fecha como YYYY-MM-DD
+            const year = fecha.getFullYear();
+            const month = String(fecha.getMonth() + 1).padStart(2, '0');
+            const day = String(fecha.getDate()).padStart(2, '0');
+            fechaInicioFacturacion.value = `${year}-${month}-${day}`;
+        }
+    }
+
+    // Función para calcular el valor a pagar del inmueble
+    function calcularValorPagarInmueble() {
+        if (coeficiente.value && valorPresupuesto.value) {
+            const coef = parseFloat(coeficiente.value);
+            const presupuesto = parseFloat(valorPresupuesto.value);
+            valorPagarInmueble.value = (coef * presupuesto/100).toFixed(2);
+            calcularValorPagarConstructora();
+        }
+    }
+
+    // Función para calcular el valor a pagar a la constructora
+    function calcularValorPagarConstructora() {
+        if (valorPagarInmueble.value && fechaIngreso.value && fechaInicioFacturacion.value) {
+            const valorInmueble = parseFloat(valorPagarInmueble.value);
+            const fechaIng = new Date(fechaIngreso.value);
+            const fechaFact = new Date(fechaInicioFacturacion.value);
+            
+            // Calcular la diferencia en días
+            const diffTime = Math.abs(fechaFact - fechaIng);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            
+            // Calcular el valor a pagar a la constructora
+            const valorConstructora = (valorInmueble / 30) * diffDays;
+            valorPagarConstructora.value = valorConstructora.toFixed(2);
+            
+            // Calcular el valor a pagar al propietario
+            calcularValorPagarPropietario();
+        }
+    }
+
+    // Función para calcular el valor a pagar al propietario
+    function calcularValorPagarPropietario() {
+        if (valorPagarInmueble.value && valorPagarConstructora.value) {
+            const valorInmueble = parseFloat(valorPagarInmueble.value);
+            const valorConstructora = parseFloat(valorPagarConstructora.value);
+            valorPagarPropietario.value = (valorInmueble - valorConstructora).toFixed(2);
+        }
+    }
+
+    // Eventos para desencadenar los cálculos
+    fechaIngreso.addEventListener('change', function() {
+        calcularFechaInicioFacturacion();
+        calcularValorPagarConstructora();
+    });
+    
+    periodoGracia.addEventListener('input', calcularFechaInicioFacturacion);
+    
+    coeficiente.addEventListener('input', calcularValorPagarInmueble);
+    valorPresupuesto.addEventListener('input', calcularValorPagarInmueble);
+    
+    // Ejecutar cálculos iniciales si hay valores preexistentes
+    calcularFechaInicioFacturacion();
+    calcularValorPagarInmueble();
+});
+</script>
+{% endblock %}
+
+<script>
+    function togglePersonFields() {
+        var tipoPersona = document.getElementById('tipo_persona').value;
+        var naturalFields = document.getElementById('personaNaturalFields');
+        var juridicaFields = document.getElementById('personaJuridicaFields');
+
+        if (tipoPersona === 'Natural') {
+            naturalFields.style.display = 'block';
+            juridicaFields.style.display = 'none';
+        } else if (tipoPersona === 'Jurídica') {
+            naturalFields.style.display = 'none';
+            juridicaFields.style.display = 'block';
+        } else {
+            naturalFields.style.display = 'none';
+            juridicaFields.style.display = 'none';
+        }
+    }
+    // Llama a la función al cargar la página para establecer el estado inicial correcto
+    document.addEventListener('DOMContentLoaded', togglePersonFields);
+</script>
+
+{% endblock %}
