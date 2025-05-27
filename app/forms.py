@@ -31,6 +31,7 @@ class CopropiedadForm(FlaskForm):
     nit = StringField('NIT', validators=[Optional(), Length(max=20)])
     telefono = StringField('Teléfono', validators=[Optional(), Length(max=50)])
     email = StringField('Email', validators=[Optional(), Email(), Length(max=120)])
+    numero_unidades = IntegerField('Número de Unidades Privadas', validators=[Optional(), NumberRange(min=1)])
     submit = SubmitField('Guardar Copropiedad')
 
 class DataEntryForm(FlaskForm):
@@ -44,9 +45,21 @@ class DataEntryForm(FlaskForm):
     
     
     inmueble = StringField('Inmueble (Ej: Apto 101, Torre 1)', validators=[DataRequired(), Length(max=200)])
-    modelo = StringField('Modelo (Ej: Tipo A, Estándar)', validators=[Optional(), Length(max=100)])
+    modelo_choices = [
+        ('individual', 'Individual'),
+        ('principal', 'Principal'),
+        ('dependiente', 'Dependiente')
+    ]
+    modelo = SelectField('Modelo', choices=modelo_choices, validators=[DataRequired()])
+
+    agrupar_por_choices = [
+        ('inmueble', 'Inmueble'),
+        ('propietario', 'Propietario'),
+
+    ]
+    agrupar_por = SelectField('Agrupar Por', choices=agrupar_por_choices, validators=[DataRequired()])  
+      
     principal = BooleanField('¿Es Inmueble Principal?')
-    agrupar_por = StringField('Agrupar Por (Ej: Interior, Bloque)', validators=[Optional(), Length(max=100)])
     matricula = StringField('Matrícula Inmobiliaria', validators=[DataRequired(), Length(max=100)])
     telefono = StringField('Teléfono de Contacto', validators=[DataRequired(), Length(min=7, max=50)])
     coeficiente = FloatField('Coeficiente (Ej: 0.0123)', validators=[Optional(), NumberRange(min=0, max=1)])

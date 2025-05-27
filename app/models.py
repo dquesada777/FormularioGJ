@@ -32,6 +32,7 @@ class Copropiedad(db.Model):
     telefono = db.Column(db.String(50), nullable=True)
     email = db.Column(db.String(120), nullable=True)
     fecha_creacion = db.Column(db.Date, default=db.func.current_date())
+    numero_unidades = db.Column(db.Integer, nullable=True)
 
      # Relación con PropiedadData
     propiedades = db.relationship('PropiedadData', backref='copropiedad', lazy=True)

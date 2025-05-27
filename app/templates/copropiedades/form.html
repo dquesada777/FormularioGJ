@@ -66,6 +66,18 @@
                 </div>
             {% endif %}
         </div>
+
+        <div class="mb-3">
+            {{ form.numero_unidades.label(class="form-label") }}
+            {{ form.numero_unidades(class="form-control" + (" is-invalid" if form.numero_unidades.errors else "")) }}
+            {% if form.numero_unidades.errors %}
+                <div class="invalid-feedback">
+                    {% for error in form.numero_unidades.errors %}
+                        {{ error }}
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
         
         <div class="mb-3">
             {{ form.submit(class="btn btn-primary") }}

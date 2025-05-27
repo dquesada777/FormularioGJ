@@ -138,7 +138,8 @@ def new_copropiedad():
             direccion=form.direccion.data,
             nit=form.nit.data,
             telefono=form.telefono.data,
-            email=form.email.data
+            email=form.email.data,
+            numero_unidades=form.numero_unidades.data
         )
         db.session.add(copropiedad)
         db.session.commit()
@@ -157,6 +158,7 @@ def edit_copropiedad(id):
         copropiedad.nit = form.nit.data
         copropiedad.telefono = form.telefono.data
         copropiedad.email = form.email.data
+        copropiedad.numero_unidades = form.numero_unidades.data
         db.session.commit()
         flash(f'Copropiedad {copropiedad.nombre} actualizada exitosamente.', 'success')
         return redirect(url_for('main.list_copropiedades'))
