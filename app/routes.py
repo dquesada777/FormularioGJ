@@ -1,11 +1,13 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request, send_file
-from .forms import LoginForm, DataEntryForm, CopropiedadForm, UserForm, UserEditForm
+from .forms import LoginForm, DataEntryForm, CopropiedadForm, UserForm, UserEditForm, ExcelUploadForm
 from .models import User, PropiedadData, Copropiedad
 from . import db
-from .utils import generate_excel_file # Importar la función de utilidad
+from .utils import generate_excel_file, process_excel_upload # Importar la función de utilidad
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash
 import io
+from werkzeug.utils import secure_filename
+import os
 
 main_bp = Blueprint('main', __name__)
 
@@ -275,3 +277,25 @@ def delete_user(id):
     db.session.commit()
     flash(f'Usuario {user.username} eliminado exitosamente.', 'success')
     return redirect(url_for('main.list_users'))
+
+@main_bp.route('/upload_excel', methods=['GET', 'POST'])
+@login_required
+def upload_excel():
+    form = ExcelUploadForm()
+    if form.validate_on_submit():
+        try:
+            # Procesar el archivo Excel
+            result = process_excel_upload(form.excel_file.data, form.copropiedad.data.id)
+            
+            if result['errors'] > 0:
+                flash(f'Se encontraron {result["errors"]} errores durante la carga. {result["processed"]} registros procesados correctamente.', 'warning')
+                for error in result['error_messages']:
+                    flash(error, 'danger')
+            else:
+                flash(f'Carga exitosa. {result["processed"]} registros añadidos a la base de datos.', 'success')
+            
+            return redirect(url_for('main.upload_excel'))
+        except Exception as e:
+            flash(f'Error al procesar el archivo: {str(e)}', 'danger')
+    
+    return render_template('upload_excel.html', title='Carga Masiva de Datos', form=form)

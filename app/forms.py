@@ -1,4 +1,5 @@
 from flask_wtf import FlaskForm
+from flask_wtf.file import FileField, FileAllowed, FileRequired
 from wtforms import StringField, DateField, IntegerField, DecimalField, PasswordField, SubmitField, TextAreaField, BooleanField, SelectField, FloatField
 from wtforms.validators import DataRequired, Email, Length, Optional, Regexp, NumberRange
 from wtforms_sqlalchemy.fields import QuerySelectField
@@ -6,6 +7,17 @@ from wtforms_sqlalchemy.fields import QuerySelectField
 def get_copropiedades():
         from app.models import Copropiedad
         return Copropiedad.query.order_by(Copropiedad.nombre).all()
+
+class ExcelUploadForm(FlaskForm):
+    excel_file = FileField('Archivo Excel', validators=[
+        FileRequired(),
+        FileAllowed(['xlsx'], 'Solo se permiten archivos Excel (.xlsx)')
+    ])
+    copropiedad = QuerySelectField('Copropiedad (para todos los registros)', 
+                                  query_factory=get_copropiedades,
+                                  get_label='nombre',
+                                  validators=[DataRequired()])
+    submit = SubmitField('Cargar Datos')
 
 class LoginForm(FlaskForm):
     username = StringField('Nombre de Usuario', validators=[DataRequired(), Length(min=4, max=80)])

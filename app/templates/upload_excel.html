@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="text-center">Carga Masiva de Datos</h2>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="mb-3">
+                            {{ form.copropiedad.label(class="form-label") }}
+                            {{ form.copropiedad(class="form-control" + (" is-invalid" if form.copropiedad.errors else "")) }}
+                            {% if form.copropiedad.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.copropiedad.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted">Seleccione la copropiedad a la que pertenecen todos los registros del archivo.</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.excel_file.label(class="form-label") }}
+                            {{ form.excel_file(class="form-control" + (" is-invalid" if form.excel_file.errors else "")) }}
+                            {% if form.excel_file.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.excel_file.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted">El archivo debe ser un Excel (.xlsx) con el mismo formato que la descarga de datos.</small>
+                        </div>
+                        
+                        <div class="d-grid mt-4">
+                            {{ form.submit(class="btn btn-primary") }}
+                        </div>
+                    </form>
+                    
+                    <div class="mt-4">
+                        <h4>Instrucciones:</h4>
+                        <ol>
+                            <li>Descargue primero un archivo Excel con la estructura correcta usando la opción "Descargar Excel".</li>
+                            <li>Complete los datos en el archivo Excel siguiendo el formato.</li>
+                            <li>Seleccione la copropiedad a la que pertenecen todos los registros.</li>
+                            <li>Suba el archivo y haga clic en "Cargar Datos".</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
