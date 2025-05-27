@@ -1,0 +1,330 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h1>Editar Inmueble: {{ propiedad.inmueble }}</h1>
+    
+    <form method="post">
+        {{ form.hidden_tag() }}
+        
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3>Información del Inmueble</h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            {{ form.copropiedad.label(class="form-label") }}
+                            {{ form.copropiedad(class="form-control") }}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            {{ form.inmueble.label(class="form-label") }}
+                            {{ form.inmueble(class="form-control") }}
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            {{ form.modelo.label(class="form-label") }}
+                            {{ form.modelo(class="form-control") }}
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            {{ form.agrupar_por.label(class="form-label") }}
+                            {{ form.agrupar_por(class="form-control") }}
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3 form-check mt-4">
+                            {{ form.principal(class="form-check-input") }}
+                            {{ form.principal.label(class="form-check-label") }}
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            {{ form.matricula.label(class="form-label") }}
+                            {{ form.matricula(class="form-control") }}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            {{ form.coeficiente.label(class="form-label") }}
+                            {{ form.coeficiente(class="form-control") }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3>Información del Propietario/Responsable</h3>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    {{ form.tipo_persona.label(class="form-label") }}
+                    {{ form.tipo_persona(class="form-control") }}
+                </div>
+                
+                <div id="personaNaturalFields" style="display: {{ 'block' if form.tipo_persona.data == 'Natural' else 'none' }};">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.primer_nombre.label(class="form-label") }}
+                                {{ form.primer_nombre(class="form-control") }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.segundo_nombre.label(class="form-label") }}
+                                {{ form.segundo_nombre(class="form-control") }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.primer_apellido.label(class="form-label") }}
+                                {{ form.primer_apellido(class="form-control") }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.segundo_apellido.label(class="form-label") }}
+                                {{ form.segundo_apellido(class="form-control") }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="personaJuridicaFields" style="display: {{ 'block' if form.tipo_persona.data == 'Jurídica' else 'none' }};">
+                    <div class="mb-3">
+                        {{ form.razon_social.label(class="form-label") }}
+                        {{ form.razon_social(class="form-control") }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3>Identificación y Contacto</h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            {{ form.tipo_id.label(class="form-label") }}
+                            {{ form.tipo_id(class="form-control") }}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            {{ form.identificacion.label(class="form-label") }}
+                            {{ form.identificacion(class="form-control") }}
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="mb-3">
+                            {{ form.dv.label(class="form-label") }}
+                            {{ form.dv(class="form-control") }}
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            {{ form.telefono.label(class="form-label") }}
+                            {{ form.telefono(class="form-control") }}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            {{ form.email.label(class="form-label") }}
+                            {{ form.email(class="form-control") }}
+                        </div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    {{ form.direccion.label(class="form-label") }}
+                    {{ form.direccion(class="form-control", rows=3) }}
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3>Información Financiera</h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            {{ form.fecha_ingreso.label(class="form-label") }}
+                            {{ form.fecha_ingreso(class="form-control", type="date") }}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            {{ form.periodo_de_gracia.label(class="form-label") }}
+                            {{ form.periodo_de_gracia(class="form-control") }}
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            {{ form.fecha_inicio_facturacion.label(class="form-label") }}
+                            {{ form.fecha_inicio_facturacion(class="form-control", type="date") }}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            {{ form.valor_presupuesto.label(class="form-label") }}
+                            {{ form.valor_presupuesto(class="form-control") }}
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            {{ form.valor_a_pagar_inmueble.label(class="form-label") }}
+                            {{ form.valor_a_pagar_inmueble(class="form-control") }}
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            {{ form.valor_a_pagar_constructora.label(class="form-label") }}
+                            {{ form.valor_a_pagar_constructora(class="form-control") }}
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            {{ form.valor_a_pagar_propietario.label(class="form-label") }}
+                            {{ form.valor_a_pagar_propietario(class="form-control") }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="d-grid gap-2 mb-4">
+            {{ form.submit(class="btn btn-primary btn-lg") }}
+            <a href="{{ url_for('main.list_propiedades') }}" class="btn btn-secondary">Cancelar</a>
+        </div>
+    </form>
+</div>
+
+{% block scripts_extra %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Mostrar/ocultar campos según el tipo de persona
+        const tipoPersona = document.getElementById('tipo_persona');
+        const personaNaturalFields = document.getElementById('personaNaturalFields');
+        const personaJuridicaFields = document.getElementById('personaJuridicaFields');
+        
+        function togglePersonFields() {
+            if (tipoPersona.value === 'Natural') {
+                personaNaturalFields.style.display = 'block';
+                personaJuridicaFields.style.display = 'none';
+            } else {
+                personaNaturalFields.style.display = 'none';
+                personaJuridicaFields.style.display = 'block';
+            }
+        }
+        
+        tipoPersona.addEventListener('change', togglePersonFields);
+        
+        // Referencias a los campos del formulario
+        const fechaIngreso = document.getElementById('fecha_ingreso');
+        const periodoGracia = document.getElementById('periodo_de_gracia');
+        const fechaInicioFacturacion = document.getElementById('fecha_inicio_facturacion');
+        
+        const coeficiente = document.getElementById('coeficiente');
+        const valorPresupuesto = document.getElementById('valor_presupuesto');
+        const valorPagarInmueble = document.getElementById('valor_a_pagar_inmueble');
+        
+        const valorPagarConstructora = document.getElementById('valor_a_pagar_constructora');
+        const valorPagarPropietario = document.getElementById('valor_a_pagar_propietario');
+
+        // Función para calcular la fecha de inicio de facturación
+        function calcularFechaInicioFacturacion() {
+            if (fechaIngreso.value && periodoGracia.value) {
+                const fecha = new Date(fechaIngreso.value);
+                fecha.setDate(fecha.getDate() + parseInt(periodoGracia.value));
+                
+                // Formatear la fecha como YYYY-MM-DD
+                const year = fecha.getFullYear();
+                const month = String(fecha.getMonth() + 1).padStart(2, '0');
+                const day = String(fecha.getDate()).padStart(2, '0');
+                fechaInicioFacturacion.value = `${year}-${month}-${day}`;
+            }
+        }
+
+        // Función para calcular el valor a pagar del inmueble
+        function calcularValorPagarInmueble() {
+            if (coeficiente.value && valorPresupuesto.value) {
+                const coef = parseFloat(coeficiente.value);
+                const presupuesto = parseFloat(valorPresupuesto.value);
+                valorPagarInmueble.value = (coef * presupuesto/100).toFixed(2);
+                calcularValorPagarConstructora();
+            }
+        }
+
+        // Función para calcular el valor a pagar a la constructora
+        function calcularValorPagarConstructora() {
+            if (valorPagarInmueble.value && fechaIngreso.value && fechaInicioFacturacion.value) {
+                const valorInmueble = parseFloat(valorPagarInmueble.value);
+                const fechaIng = new Date(fechaIngreso.value);
+                const fechaFact = new Date(fechaInicioFacturacion.value);
+                
+                // Calcular la diferencia en días
+                const diffTime = Math.abs(fechaFact - fechaIng);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                
+                // Calcular el valor a pagar a la constructora
+                const valorConstructora = (valorInmueble / 30) * diffDays;
+                valorPagarConstructora.value = valorConstructora.toFixed(2);
+                
+                // Calcular el valor a pagar al propietario
+                calcularValorPagarPropietario();
+            }
+        }
+
+        // Función para calcular el valor a pagar al propietario
+        function calcularValorPagarPropietario() {
+            if (valorPagarInmueble.value && valorPagarConstructora.value) {
+                const valorInmueble = parseFloat(valorPagarInmueble.value);
+                const valorConstructora = parseFloat(valorPagarConstructora.value);
+                valorPagarPropietario.value = (valorInmueble - valorConstructora).toFixed(2);
+            }
+        }
+
+        // Eventos para desencadenar los cálculos
+        fechaIngreso.addEventListener('change', function() {
+            calcularFechaInicioFacturacion();
+            calcularValorPagarConstructora();
+        });
+        
+        periodoGracia.addEventListener('input', calcularFechaInicioFacturacion);
+        
+        coeficiente.addEventListener('input', calcularValorPagarInmueble);
+        valorPresupuesto.addEventListener('input', calcularValorPagarInmueble);
+        
+        // Ejecutar cálculos iniciales si hay valores preexistentes
+        calcularFechaInicioFacturacion();
+        calcularValorPagarInmueble();
+        
+        // Ejecutar togglePersonFields inicialmente para configurar la visualización correcta
+        togglePersonFields();
+    });
+</script>
+{% endblock %}
+{% endblock %}

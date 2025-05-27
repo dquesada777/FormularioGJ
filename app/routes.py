@@ -127,12 +127,19 @@ def submit_data():
 @main_bp.route('/copropiedades')
 @login_required
 def list_copropiedades():
+    if not check_admin():
+         flash('Acceso denegado. Se requieren privilegios de administrador.', 'danger')
+         return redirect(url_for('main.index'))
+
     copropiedades = Copropiedad.query.all()
     return render_template('copropiedades/list.html', title='Copropiedades', copropiedades=copropiedades)
 
 @main_bp.route('/copropiedades/new', methods=['GET', 'POST'])
 @login_required
 def new_copropiedad():
+    if not check_admin():
+        flash('Acceso denegado. Se requieren privilegios de administrador.', 'danger')
+        return redirect(url_for('main.index'))
     form = CopropiedadForm()
     if form.validate_on_submit():
         copropiedad = Copropiedad(
@@ -152,6 +159,9 @@ def new_copropiedad():
 @main_bp.route('/copropiedades/edit/<int:id>', methods=['GET', 'POST'])
 @login_required
 def edit_copropiedad(id):
+    if not check_admin():
+        flash('Acceso denegado. Se requieren privilegios de administrador.', 'danger')
+        return redirect(url_for('main.index'))
     copropiedad = Copropiedad.query.get_or_404(id)
     form = CopropiedadForm(obj=copropiedad)
     if form.validate_on_submit():
@@ -165,6 +175,77 @@ def edit_copropiedad(id):
         flash(f'Copropiedad {copropiedad.nombre} actualizada exitosamente.', 'success')
         return redirect(url_for('main.list_copropiedades'))
     return render_template('copropiedades/form.html', title='Editar Copropiedad', form=form)
+
+@main_bp.route('/propiedades')
+@login_required
+def list_propiedades():
+    propiedades = PropiedadData.query.all()
+    return render_template('propiedades/list.html', title='Listado de Inmuebles', propiedades=propiedades)
+
+@main_bp.route('/propiedades/edit/<int:id>', methods=['GET', 'POST'])
+@login_required
+def edit_propiedad(id):
+    propiedad = PropiedadData.query.get_or_404(id)
+    form = DataEntryForm(obj=propiedad)
+    
+    # Si la propiedad tiene una copropiedad asignada, seleccionarla en el formulario
+    if propiedad.copropiedad:
+        form.copropiedad.data = propiedad.copropiedad
+    
+    if form.validate_on_submit():
+        try:
+            # Actualizar los datos de la propiedad
+            propiedad.inmueble = form.inmueble.data
+            propiedad.modelo = form.modelo.data
+            propiedad.principal = form.principal.data
+            propiedad.agrupar_por = form.agrupar_por.data
+            propiedad.matricula = form.matricula.data
+            propiedad.telefono = form.telefono.data
+            propiedad.coeficiente = form.coeficiente.data
+            propiedad.tipo_persona = form.tipo_persona.data
+            
+            # Información del propietario/responsable
+            if form.tipo_persona.data == 'Natural':
+                propiedad.primer_nombre = form.primer_nombre.data
+                propiedad.segundo_nombre = form.segundo_nombre.data
+                propiedad.primer_apellido = form.primer_apellido.data
+                propiedad.segundo_apellido = form.segundo_apellido.data
+                propiedad.razon_social = None
+            else:
+                propiedad.primer_nombre = None
+                propiedad.segundo_nombre = None
+                propiedad.primer_apellido = None
+                propiedad.segundo_apellido = None
+                propiedad.razon_social = form.razon_social.data
+            
+            # Identificación y contacto
+            propiedad.tipo_id = form.tipo_id.data
+            propiedad.identificacion = form.identificacion.data
+            propiedad.dv = form.dv.data
+            propiedad.email = form.email.data
+            propiedad.direccion = form.direccion.data
+            
+            # Información financiera
+            propiedad.fecha_inicio_facturacion = form.fecha_inicio_facturacion.data
+            propiedad.fecha_ingreso = form.fecha_ingreso.data
+            propiedad.periodo_de_gracia = form.periodo_de_gracia.data
+            propiedad.valor_a_pagar_inmueble = form.valor_a_pagar_inmueble.data
+            propiedad.valor_presupuesto = form.valor_presupuesto.data
+            propiedad.valor_a_pagar_constructora = form.valor_a_pagar_constructora.data
+            propiedad.valor_a_pagar_propietario = form.valor_a_pagar_propietario.data
+            
+            # Actualizar la copropiedad si se seleccionó una
+            if form.copropiedad.data:
+                propiedad.copropiedad_id = form.copropiedad.data.id
+            
+            db.session.commit()
+            flash(f'Inmueble {propiedad.inmueble} actualizado exitosamente.', 'success')
+            return redirect(url_for('main.list_propiedades'))
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Error al actualizar los datos: {str(e)}', 'danger')
+    
+    return render_template('propiedades/edit.html', title='Editar Inmueble', form=form, propiedad=propiedad)
 
 @main_bp.route('/download_excel_data')
 @login_required
