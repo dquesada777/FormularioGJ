@@ -14,7 +14,7 @@ main_bp = Blueprint('main', __name__)
 @login_required
 def index():
     form = DataEntryForm()
-    return render_template('data_form.html', title='Ingreso de Datos de Propiedad', form=form)
+    return render_template('data_form.html', title='Ingreso de Datos Generales', form=form)
 
 @main_bp.route('/login', methods=['GET', 'POST'])
 def login():
@@ -118,7 +118,7 @@ def submit_data():
     else:
         # Si el formulario no es válido, los errores se mostrarán en la plantilla
         flash('Por favor, corrige los errores en el formulario.', 'warning')
-    return render_template('data_form.html', title='Ingreso de Datos de Propiedad', form=form)
+    return render_template('data_form.html', title='Ingreso de Datos Generales', form=form)
 
 # Nueva ruta para gestionar copropiedades
 
