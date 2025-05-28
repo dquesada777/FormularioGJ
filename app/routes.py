@@ -130,9 +130,12 @@ def list_copropiedades():
     if not check_admin():
          flash('Acceso denegado. Se requieren privilegios de administrador.', 'danger')
          return redirect(url_for('main.index'))
+    
+     # Obtener el límite de registros a mostrar
+    limit = request.args.get('limit', 20, type=int)  # Por defecto 20 registros
 
-    copropiedades = Copropiedad.query.all()
-    return render_template('copropiedades/list.html', title='Copropiedades', copropiedades=copropiedades)
+    copropiedades = Copropiedad.query.limit(limit).all()
+    return render_template('copropiedades/list.html', title='Copropiedades', copropiedades=copropiedades, limit=limit)
 
 @main_bp.route('/copropiedades/new', methods=['GET', 'POST'])
 @login_required
@@ -176,12 +179,39 @@ def edit_copropiedad(id):
         return redirect(url_for('main.list_copropiedades'))
     return render_template('copropiedades/form.html', title='Editar Copropiedad', form=form)
 
+@main_bp.route('/copropiedades/delete/<int:id>', methods=['POST'])
+@login_required
+def delete_copropiedad(id):
+    if not check_admin():
+        flash('Acceso denegado. Se requieren privilegios de administrador.', 'danger')
+        return redirect(url_for('main.index'))
+    
+    copropiedad = Copropiedad.query.get_or_404(id)
+    
+    # Verificar si hay propiedades asociadas a esta copropiedad
+    propiedades_asociadas = PropiedadData.query.filter_by(copropiedad_id=id).count()
+    if propiedades_asociadas > 0:
+        flash(f'No se puede eliminar la copropiedad "{copropiedad.nombre}" porque tiene {propiedades_asociadas} inmuebles asociados.', 'danger')
+        return redirect(url_for('main.list_copropiedades'))
+    
+    try:
+        nombre = copropiedad.nombre
+        db.session.delete(copropiedad)
+        db.session.commit()
+        flash(f'Copropiedad "{nombre}" eliminada exitosamente.', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error al eliminar la copropiedad: {str(e)}', 'danger')
+    
+    return redirect(url_for('main.list_copropiedades'))
+
 @main_bp.route('/propiedades')
 @login_required
 def list_propiedades():
     # Obtener parámetros de búsqueda y paginación
     copropiedad_id = request.args.get('copropiedad_id', type=int)
-    limit = request.args.get('limit', 20, type=int)  # Por defecto 20 registros
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 20, type=int)  # Por defecto 20 registros por página
     
     # Construir la consulta base
     query = PropiedadData.query
@@ -190,8 +220,9 @@ def list_propiedades():
     if copropiedad_id:
         query = query.filter_by(copropiedad_id=copropiedad_id)
     
-    # Limitar la cantidad de registros
-    propiedades = query.limit(limit).all()
+     # Paginar los resultados
+    pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+    propiedades = pagination.items
     
     # Obtener todas las copropiedades para el selector
     copropiedades = Copropiedad.query.all()
@@ -202,7 +233,8 @@ def list_propiedades():
         propiedades=propiedades,
         copropiedades=copropiedades,
         copropiedad_id=copropiedad_id,
-        limit=limit
+        pagination=pagination,
+        per_page=per_page
     )
 
 @main_bp.route('/propiedades/edit/<int:id>', methods=['GET', 'POST'])

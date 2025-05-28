@@ -69,7 +69,7 @@ def generate_excel_file():
 
 def process_excel_upload(file_stream, copropiedad_id):
     """Procesa un archivo Excel y carga los datos en la base de datos."""
-
+    
     workbook = openpyxl.load_workbook(file_stream)
     sheet = workbook.active
     
@@ -87,21 +87,40 @@ def process_excel_upload(file_stream, copropiedad_id):
             # Crear un diccionario con los datos de la fila
             data = dict(zip(headers, row))
             
+            # Verificar que la matrícula no sea nula
+            matricula = data.get('Matrícula')
+            if not matricula:
+                error_messages.append(f"Fila {row_idx}: El campo 'Matrícula' es obligatorio.")
+                errors += 1
+                continue
+            
             # Verificar si la matrícula ya existe
-            if PropiedadData.query.filter_by(matricula=data.get('Matrícula')).first():
-                error_messages.append(f"Fila {row_idx}: La matrícula {data.get('Matrícula')} ya existe.")
+            if PropiedadData.query.filter_by(matricula=matricula).first():
+                error_messages.append(f"Fila {row_idx}: La matrícula {matricula} ya existe.")
+                errors += 1
+                continue
+            
+            # Verificar si la identificación ya existe
+            identificacion = data.get('Identificación')
+            if not identificacion:
+                error_messages.append(f"Fila {row_idx}: El campo 'Identificación' es obligatorio.")
                 errors += 1
                 continue
                 
+            if PropiedadData.query.filter_by(identificacion=str(identificacion)).first():
+                error_messages.append(f"Fila {row_idx}: La identificación {identificacion} ya existe.")
+                errors += 1
+                continue
+            
             # Crear un nuevo objeto PropiedadData
             nueva_propiedad = PropiedadData(
                 copropiedad_id=copropiedad_id,
                 inmueble=data.get('Inmueble', ''),
                 modelo=data.get('Modelo', 'individual'),
-                principal=data.get('Principal', False),
+                principal=bool(data.get('Principal', False)),
                 agrupar_por=data.get('Agrupar Por', 'inmueble'),
-                matricula=data.get('Matrícula', ''),
-                telefono=data.get('Teléfono', ''),
+                matricula=str(matricula),  # Convertir a string para evitar problemas con números
+                telefono=str(data.get('Teléfono', '')),
                 coeficiente=float(data.get('Coeficiente', 0) or 0),
                 tipo_persona=data.get('Tipo Persona', 'Natural'),
                 primer_nombre=data.get('Primer Nombre'),
@@ -110,8 +129,8 @@ def process_excel_upload(file_stream, copropiedad_id):
                 segundo_apellido=data.get('Segundo Apellido'),
                 razon_social=data.get('Razón Social'),
                 tipo_id=data.get('Tipo ID', 'CC'),
-                identificacion=data.get('Identificación', ''),
-                dv=data.get('DV', ''),
+                identificacion=str(identificacion),  # Convertir a string para evitar problemas con números
+                dv=str(data.get('DV', '')),
                 email=data.get('Email', ''),
                 direccion=data.get('Dirección', ''),
                 fecha_inicio_facturacion=datetime.strptime(data.get('Fecha Inicio Facturación'), '%Y-%m-%d').date() if data.get('Fecha Inicio Facturación') else None,
@@ -126,18 +145,16 @@ def process_excel_upload(file_stream, copropiedad_id):
             db.session.add(nueva_propiedad)
             processed += 1
             
+            # Hacer commit después de cada registro para evitar problemas con transacciones largas
+            db.session.commit()
+            
         except Exception as e:
+            db.session.rollback()
             errors += 1
             error_messages.append(f"Fila {row_idx}: {str(e)}")
-    
-    # Commit solo si no hubo errores
-    if errors == 0:
-        db.session.commit()
-    else:
-        db.session.rollback()
     
     return {
         'processed': processed,
         'errors': errors,
         'error_messages': error_messages
-    }   
+    }
