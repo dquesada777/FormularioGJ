@@ -74,7 +74,7 @@ class DataEntryForm(FlaskForm):
     principal = BooleanField('¿Es Inmueble Principal?')
     matricula = StringField('Matrícula Inmobiliaria', validators=[DataRequired(), Length(max=100)])
     telefono = StringField('Teléfono de Contacto', validators=[DataRequired(), Length(min=7, max=50)])
-    coeficiente = FloatField('Coeficiente (Ej: 0.0123)', validators=[Optional(), NumberRange(min=0, max=1)])
+    coeficiente = FloatField('Coeficiente (Ej: 0.0123)', validators=[Optional(), NumberRange(min=0)])
 
     tipo_persona_choices = [('Natural', 'Persona Natural'), ('Jurídica', 'Persona Jurídica')]
     tipo_persona = SelectField('Tipo de Persona', choices=tipo_persona_choices, validators=[DataRequired()])

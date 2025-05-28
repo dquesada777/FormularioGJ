@@ -179,8 +179,31 @@ def edit_copropiedad(id):
 @main_bp.route('/propiedades')
 @login_required
 def list_propiedades():
-    propiedades = PropiedadData.query.all()
-    return render_template('propiedades/list.html', title='Listado de Inmuebles', propiedades=propiedades)
+    # Obtener parámetros de búsqueda y paginación
+    copropiedad_id = request.args.get('copropiedad_id', type=int)
+    limit = request.args.get('limit', 20, type=int)  # Por defecto 20 registros
+    
+    # Construir la consulta base
+    query = PropiedadData.query
+    
+    # Filtrar por copropiedad si se especificó
+    if copropiedad_id:
+        query = query.filter_by(copropiedad_id=copropiedad_id)
+    
+    # Limitar la cantidad de registros
+    propiedades = query.limit(limit).all()
+    
+    # Obtener todas las copropiedades para el selector
+    copropiedades = Copropiedad.query.all()
+    
+    return render_template(
+        'propiedades/list.html', 
+        title='Listado de Inmuebles', 
+        propiedades=propiedades,
+        copropiedades=copropiedades,
+        copropiedad_id=copropiedad_id,
+        limit=limit
+    )
 
 @main_bp.route('/propiedades/edit/<int:id>', methods=['GET', 'POST'])
 @login_required
@@ -191,6 +214,14 @@ def edit_propiedad(id):
     # Si la propiedad tiene una copropiedad asignada, seleccionarla en el formulario
     if propiedad.copropiedad:
         form.copropiedad.data = propiedad.copropiedad
+    
+        # Añadir registro de depuración
+    if request.method == 'POST':
+        print("Formulario enviado por POST")
+        print(f"CSRF Token presente: {'csrf_token' in request.form}")
+        print(f"Formulario válido: {form.validate()}")
+        if not form.validate():
+            print(f"Errores: {form.errors}")
     
     if form.validate_on_submit():
         try:
