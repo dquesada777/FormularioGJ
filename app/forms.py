@@ -51,8 +51,6 @@ class ReportForm(FlaskForm):
                                   query_factory=get_copropiedades,
                                   get_label='nombre',
                                   validators=[DataRequired()])
-    fecha_inicio = DateField('Fecha de Ingreso (desde)', format='%Y-%m-%d', validators=[Optional()])
-    fecha_fin = DateField('Fecha de Inicio Facturación (hasta)', format='%Y-%m-%d', validators=[Optional()])
     submit = SubmitField('Generar Reporte')
    
 class DataEntryForm(FlaskForm):

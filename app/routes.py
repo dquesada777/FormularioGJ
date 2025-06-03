@@ -1,13 +1,14 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request, send_file
-from .forms import LoginForm, DataEntryForm, CopropiedadForm, UserForm, UserEditForm, ExcelUploadForm
+from .forms import LoginForm, DataEntryForm, CopropiedadForm, UserForm, UserEditForm, ExcelUploadForm, ReportForm
 from .models import User, PropiedadData, Copropiedad
 from . import db
-from .utils import generate_excel_file, process_excel_upload # Importar la función de utilidad
+from .utils import generate_excel_file, process_excel_upload, generate_pdf_report  # Importar la función de utilidad
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash
 import io
 from werkzeug.utils import secure_filename
 import os
+from datetime import datetime
 
 main_bp = Blueprint('main', __name__)
 
@@ -451,11 +452,7 @@ def generate_report():
     if form.validate_on_submit():
         try:
             # Generar el reporte PDF
-            pdf_stream = generate_pdf_report(
-                form.copropiedad.data.id,
-                form.fecha_inicio.data,
-                form.fecha_fin.data
-            )
+            pdf_stream = generate_pdf_report(form.copropiedad.data.id) 
             
             # Nombre del archivo
             filename = f"reporte_{form.copropiedad.data.nombre.replace(' ', '_')}_{datetime.now().strftime('%Y%m%d')}.pdf"

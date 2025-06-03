@@ -19,38 +19,7 @@
                             {% endfor %}
                         </div>
                     {% endif %}
-                    <small class="form-text text-muted">Seleccione la copropiedad para el reporte.</small>
-                </div>
-                
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="mb-3">
-                            {{ form.fecha_inicio.label(class="form-label") }}
-                            {{ form.fecha_inicio(class="form-control", type="date") }}
-                            {% if form.fecha_inicio.errors %}
-                                <div class="invalid-feedback">
-                                    {% for error in form.fecha_inicio.errors %}
-                                        {{ error }}
-                                    {% endfor %}
-                                </div>
-                            {% endif %}
-                            <small class="form-text text-muted">Opcional: Filtrar por fecha de ingreso.</small>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="mb-3">
-                            {{ form.fecha_fin.label(class="form-label") }}
-                            {{ form.fecha_fin(class="form-control", type="date") }}
-                            {% if form.fecha_fin.errors %}
-                                <div class="invalid-feedback">
-                                    {% for error in form.fecha_fin.errors %}
-                                        {{ error }}
-                                    {% endfor %}
-                                </div>
-                            {% endif %}
-                            <small class="form-text text-muted">Opcional: Filtrar por fecha de inicio de facturación.</small>
-                        </div>
-                    </div>
+                    <small class="form-text text-muted">Seleccione la copropiedad para generar el reporte de inmuebles.</small>
                 </div>
                 
                 <div class="d-grid mt-4">
