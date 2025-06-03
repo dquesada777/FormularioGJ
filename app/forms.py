@@ -46,6 +46,15 @@ class CopropiedadForm(FlaskForm):
     numero_unidades = IntegerField('Número de Unidades Privadas', validators=[Optional(), NumberRange(min=1)])
     submit = SubmitField('Guardar Copropiedad')
 
+class ReportForm(FlaskForm):
+    copropiedad = QuerySelectField('Copropiedad', 
+                                  query_factory=get_copropiedades,
+                                  get_label='nombre',
+                                  validators=[DataRequired()])
+    fecha_inicio = DateField('Fecha de Ingreso (desde)', format='%Y-%m-%d', validators=[Optional()])
+    fecha_fin = DateField('Fecha de Inicio Facturación (hasta)', format='%Y-%m-%d', validators=[Optional()])
+    submit = SubmitField('Generar Reporte')
+   
 class DataEntryForm(FlaskForm):
       
     copropiedad = QuerySelectField('Copropiedad', 

@@ -443,3 +443,30 @@ def upload_excel():
             flash(f'Error al procesar el archivo: {str(e)}', 'danger')
     
     return render_template('upload_excel.html', title='Carga Masiva de Datos', form=form)
+
+@main_bp.route('/report', methods=['GET', 'POST'])
+@login_required
+def generate_report():
+    form = ReportForm()
+    if form.validate_on_submit():
+        try:
+            # Generar el reporte PDF
+            pdf_stream = generate_pdf_report(
+                form.copropiedad.data.id,
+                form.fecha_inicio.data,
+                form.fecha_fin.data
+            )
+            
+            # Nombre del archivo
+            filename = f"reporte_{form.copropiedad.data.nombre.replace(' ', '_')}_{datetime.now().strftime('%Y%m%d')}.pdf"
+            
+            return send_file(
+                pdf_stream,
+                as_attachment=True,
+                download_name=filename,
+                mimetype='application/pdf'
+            )
+        except Exception as e:
+            flash(f'Error al generar el reporte: {str(e)}', 'danger')
+    
+    return render_template('report_form.html', title='Generar Reporte', form=form)

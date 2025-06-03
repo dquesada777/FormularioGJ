@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h1>Generar Reporte de Inmuebles</h1>
+    
+    <div class="card mb-4" style="background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);">
+        <div class="card-body">
+            <form method="post">
+                {{ form.hidden_tag() }}
+                
+                <div class="mb-3">
+                    {{ form.copropiedad.label(class="form-label") }}
+                    {{ form.copropiedad(class="form-control") }}
+                    {% if form.copropiedad.errors %}
+                        <div class="invalid-feedback">
+                            {% for error in form.copropiedad.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    <small class="form-text text-muted">Seleccione la copropiedad para el reporte.</small>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            {{ form.fecha_inicio.label(class="form-label") }}
+                            {{ form.fecha_inicio(class="form-control", type="date") }}
+                            {% if form.fecha_inicio.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.fecha_inicio.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted">Opcional: Filtrar por fecha de ingreso.</small>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            {{ form.fecha_fin.label(class="form-label") }}
+                            {{ form.fecha_fin(class="form-control", type="date") }}
+                            {% if form.fecha_fin.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.fecha_fin.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted">Opcional: Filtrar por fecha de inicio de facturación.</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="d-grid mt-4">
+                    {{ form.submit(class="btn btn-primary") }}
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

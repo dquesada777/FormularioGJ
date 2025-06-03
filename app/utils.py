@@ -5,6 +5,12 @@ import logging
 from app.models import PropiedadData, Copropiedad
 from app import db
 from datetime import datetime
+from reportlab.lib.pagesizes import letter
+from reportlab.lib import colors
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet
+from io import BytesIO
+from datetime import datetime
 
 def generate_excel_file():
     """Genera un archivo Excel con los datos de PropiedadData."""
@@ -158,3 +164,98 @@ def process_excel_upload(file_stream, copropiedad_id):
         'errors': errors,
         'error_messages': error_messages
     }
+
+def generate_pdf_report(copropiedad_id, fecha_inicio=None, fecha_fin=None):
+    """Genera un reporte PDF con los datos de los inmuebles de una copropiedad."""
+    from app.models import PropiedadData, Copropiedad
+    
+    # Obtener la copropiedad
+    copropiedad = Copropiedad.query.get(copropiedad_id)
+    if not copropiedad:
+        raise ValueError("Copropiedad no encontrada")
+    
+    # Construir la consulta
+    query = PropiedadData.query.filter_by(copropiedad_id=copropiedad_id)
+    
+    # Filtrar por fechas si se proporcionan
+    if fecha_inicio:
+        query = query.filter(PropiedadData.fecha_ingreso >= fecha_inicio)
+    if fecha_fin:
+        query = query.filter(PropiedadData.fecha_inicio_facturacion <= fecha_fin)
+    
+    # Obtener los inmuebles
+    propiedades = query.all()
+    
+    # Crear el PDF
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=letter)
+    elements = []
+    
+    # Estilos
+    styles = getSampleStyleSheet()
+    title_style = styles['Heading1']
+    subtitle_style = styles['Heading2']
+    normal_style = styles['Normal']
+    
+    # Título
+    elements.append(Paragraph(f"Reporte de Inmuebles - {copropiedad.nombre}", title_style))
+    elements.append(Spacer(1, 12))
+    
+    # Información de la copropiedad
+    elements.append(Paragraph(f"Dirección: {copropiedad.direccion}", normal_style))
+    if copropiedad.nit:
+        elements.append(Paragraph(f"NIT: {copropiedad.nit}", normal_style))
+    elements.append(Paragraph(f"Fecha del reporte: {datetime.now().strftime('%Y-%m-%d')}", normal_style))
+    elements.append(Spacer(1, 12))
+    
+    # Filtros aplicados
+    if fecha_inicio or fecha_fin:
+        filtros = "Filtros aplicados: "
+        if fecha_inicio:
+            filtros += f"Fecha de ingreso desde {fecha_inicio.strftime('%Y-%m-%d')} "
+        if fecha_fin:
+            filtros += f"Fecha de inicio facturación hasta {fecha_fin.strftime('%Y-%m-%d')}"
+        elements.append(Paragraph(filtros, normal_style))
+        elements.append(Spacer(1, 12))
+    
+    # Tabla de inmuebles
+    if propiedades:
+        # Encabezados
+        data = [["Inmueble", "Matrícula", "Propietario", "Fecha Ingreso", "Fecha Inicio Facturación"]]
+        
+        # Datos
+        for prop in propiedades:
+            propietario = prop.razon_social if prop.tipo_persona == 'Jurídica' else f"{prop.primer_nombre or ''} {prop.primer_apellido or ''}"
+            fecha_ingreso = prop.fecha_ingreso.strftime('%Y-%m-%d') if prop.fecha_ingreso else "N/A"
+            fecha_facturacion = prop.fecha_inicio_facturacion.strftime('%Y-%m-%d') if prop.fecha_inicio_facturacion else "N/A"
+            
+            data.append([
+                prop.inmueble,
+                prop.matricula,
+                propietario.strip(),
+                fecha_ingreso,
+                fecha_facturacion
+            ])
+        
+        # Crear la tabla
+        table = Table(data, repeatRows=1)
+        
+        # Estilo de la tabla
+        table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black)
+        ]))
+        
+        elements.append(table)
+    else:
+        elements.append(Paragraph("No se encontraron inmuebles con los criterios seleccionados.", normal_style))
+    
+    # Generar el PDF
+    doc.build(elements)
+    buffer.seek(0)
+    return buffer           
