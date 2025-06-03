@@ -1,14 +1,15 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request, send_file
-from .forms import LoginForm, DataEntryForm, CopropiedadForm, UserForm, UserEditForm, ExcelUploadForm, ReportForm
+from .forms import LoginForm, DataEntryForm, CopropiedadForm, UserForm, UserEditForm, ExcelUploadForm, ReportForm, AdminReportForm
 from .models import User, PropiedadData, Copropiedad
 from . import db
-from .utils import generate_excel_file, process_excel_upload, generate_pdf_report  # Importar la función de utilidad
+from .utils import generate_excel_file, process_excel_upload, generate_pdf_report, generate_filtered_excel_report  # Importar la función de utilidad
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash
 import io
 from werkzeug.utils import secure_filename
 import os
 from datetime import datetime
+import calendar
 
 main_bp = Blueprint('main', __name__)
 
@@ -467,3 +468,38 @@ def generate_report():
             flash(f'Error al generar el reporte: {str(e)}', 'danger')
     
     return render_template('report_form.html', title='Generar Reporte', form=form)
+
+@main_bp.route('/admin_report', methods=['GET', 'POST'])
+@login_required
+def admin_report():
+    # Verificar si el usuario es administrador
+    if not check_admin():
+        flash('Acceso denegado. Se requieren privilegios de administrador.', 'danger')
+        return redirect(url_for('main.index'))
+    
+    form = AdminReportForm()
+    if form.validate_on_submit():
+        try:
+            # Obtener los parámetros del formulario
+            copropiedad_id = form.copropiedad.data.id if form.copropiedad.data else None
+            year = int(form.year.data)
+            month = int(form.month.data)
+            
+            # Generar el reporte Excel
+            excel_stream = generate_filtered_excel_report(copropiedad_id, year, month)
+            
+            # Nombre del archivo
+            copropiedad_nombre = form.copropiedad.data.nombre if form.copropiedad.data else "todas"
+            month_name = calendar.month_name[month]
+            filename = f"reporte_financiero_{copropiedad_nombre}_{month_name}_{year}.xlsx"
+            
+            return send_file(
+                excel_stream,
+                as_attachment=True,
+                download_name=filename,
+                mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            )
+        except Exception as e:
+            flash(f'Error al generar el reporte: {str(e)}', 'danger')
+    
+    return render_template('admin_report.html', title='Reporte Financiero', form=form)

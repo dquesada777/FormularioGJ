@@ -3,6 +3,8 @@ from flask_wtf.file import FileField, FileAllowed, FileRequired
 from wtforms import StringField, DateField, IntegerField, DecimalField, PasswordField, SubmitField, TextAreaField, BooleanField, SelectField, FloatField
 from wtforms.validators import DataRequired, Email, Length, Optional, Regexp, NumberRange
 from wtforms_sqlalchemy.fields import QuerySelectField
+from datetime import datetime
+import calendar
 
 def get_copropiedades():
         from app.models import Copropiedad
@@ -52,6 +54,22 @@ class ReportForm(FlaskForm):
                                   get_label='nombre',
                                   validators=[DataRequired()])
     submit = SubmitField('Generar Reporte')
+
+class AdminReportForm(FlaskForm):
+    copropiedad = QuerySelectField('Copropiedad', 
+                                  query_factory=get_copropiedades,
+                                  get_label='nombre',
+                                  allow_blank=True,
+                                  blank_text='-- Todas las Copropiedades --',
+                                  validators=[Optional()])
+    
+    year_choices = [(y, str(y)) for y in range(2020, datetime.now().year + 2)]
+    year = SelectField('Año', choices=year_choices, validators=[DataRequired()], default=datetime.now().year)
+    
+    month_choices = [(m, calendar.month_name[m]) for m in range(1, 13)]
+    month = SelectField('Mes', choices=month_choices, validators=[DataRequired()], default=datetime.now().month)
+    
+    submit = SubmitField('Generar Reporte Excel')
    
 class DataEntryForm(FlaskForm):
       

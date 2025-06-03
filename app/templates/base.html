@@ -35,11 +35,14 @@
         <a class="nav-link" href="{{ url_for('main.upload_excel') }}">Carga Masiva</a>
     </li>
     <li class="nav-item">
-        <a class="nav-link" href="{{ url_for('main.generate_report') }}">Generar Reporte</a>
+        <a class="nav-link" href="{{ url_for('main.generate_report') }}">Reporte Inmuebles</a>
     </li>
     {% if current_user.is_admin %}
     <li class="nav-item">
         <a class="nav-link" href="{{ url_for('main.list_copropiedades') }}">Copropiedades</a>
+    </li>
+     <li class="nav-item">
+        <a class="nav-link" href="{{ url_for('main.admin_report') }}">Reporte Facturación</a>
     </li>
     {% endif %}
     <li class="nav-item">

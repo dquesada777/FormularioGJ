@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h1>Generar Reporte Facturación</h1>
+    
+    <div class="card mb-4" style="background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);">
+        <div class="card-body">
+            <form method="post">
+                {{ form.hidden_tag() }}
+                
+                <div class="mb-3">
+                    {{ form.copropiedad.label(class="form-label") }}
+                    {{ form.copropiedad(class="form-control") }}
+                    <small class="form-text text-muted">Seleccione una copropiedad específica o deje en blanco para todas.</small>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            {{ form.year.label(class="form-label") }}
+                            {{ form.year(class="form-control") }}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            {{ form.month.label(class="form-label") }}
+                            {{ form.month(class="form-control") }}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="d-grid mt-4">
+                    {{ form.submit(class="btn btn-primary") }}
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

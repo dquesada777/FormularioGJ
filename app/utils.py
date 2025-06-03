@@ -11,6 +11,84 @@ from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, 
 from reportlab.lib.styles import getSampleStyleSheet
 from io import BytesIO
 from datetime import datetime
+import calendar
+
+def generate_filtered_excel_report(copropiedad_id=None, year=None, month=None):
+    
+    """Genera un archivo Excel con datos filtrados por copropiedad, año y mes
+       Solo accesible para administradores"""
+    
+# Crear un nuevo libro de trabajo de Excel
+    workbook = openpyxl.Workbook()
+    sheet = workbook.active
+    sheet.title = "Reporte Financiero"
+
+    # Construir la consulta base
+    query = PropiedadData.query
+    
+    # Aplicar filtros
+    if copropiedad_id:
+        query = query.filter_by(copropiedad_id=copropiedad_id)
+    
+    # Filtrar por año y mes si se proporcionan
+    if year and month:
+        # Obtener el primer y último día del mes
+        last_day = calendar.monthrange(year, month)[1]
+        start_date = datetime(year, month, 1)
+        end_date = datetime(year, month, last_day)
+        
+        # Filtrar por fecha de inicio de facturación
+        query = query.filter(PropiedadData.fecha_inicio_facturacion >= start_date,
+                            PropiedadData.fecha_inicio_facturacion <= end_date)
+    
+    # Obtener los resultados
+    propiedades = query.all()
+    
+    # Encabezados
+    headers = [
+        "Copropiedad", "Inmueble", "Matrícula", "Propietario", 
+        "Fecha Ingreso", "Fecha Inicio Facturación", "Periodo de Gracia",
+        "Valor Presupuesto", "Valor a Pagar Inmueble", 
+        "Valor a Pagar Constructora", "Valor a Pagar Propietario"
+    ]
+    sheet.append(headers)
+
+    # Datos
+    for prop in propiedades:
+        copropiedad_nombre = prop.copropiedad.nombre if prop.copropiedad else "No asignada"
+        propietario = prop.razon_social if prop.tipo_persona == 'Jurídica' else f"{prop.primer_nombre or ''} {prop.primer_apellido or ''}".strip()
+        
+        row = [
+            copropiedad_nombre,
+            prop.inmueble,
+            prop.matricula,
+            propietario,
+            prop.fecha_ingreso.strftime('%Y-%m-%d') if prop.fecha_ingreso else "N/A",
+            prop.fecha_inicio_facturacion.strftime('%Y-%m-%d') if prop.fecha_inicio_facturacion else "N/A",
+            prop.periodo_de_gracia,
+            prop.valor_presupuesto,
+            prop.valor_a_pagar_inmueble,
+            prop.valor_a_pagar_constructora,
+            prop.valor_a_pagar_propietario
+        ]
+        sheet.append(row)
+
+    # Ajustar el ancho de las columnas
+    for col in sheet.columns:
+        max_length = 0
+        column = col[0].column_letter
+        for cell in col:
+            if cell.value:
+                max_length = max(max_length, len(str(cell.value)))
+        adjusted_width = (max_length + 2)
+        sheet.column_dimensions[column].width = adjusted_width
+
+    # Guardar el libro de trabajo en un stream de bytes
+    excel_stream = BytesIO()
+    workbook.save(excel_stream)
+    excel_stream.seek(0)
+
+    return excel_stream
 
 def generate_pdf_report(copropiedad_id):
     """Genera un reporte PDF con los datos de los inmuebles de una copropiedad."""
