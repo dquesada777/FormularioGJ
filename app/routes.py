@@ -212,6 +212,7 @@ def delete_copropiedad(id):
 def list_propiedades():
     # Obtener parámetros de búsqueda y paginación
     copropiedad_id = request.args.get('copropiedad_id', type=int)
+    search_term = request.args.get('search', '')
     page = request.args.get('page', 1, type=int)
     per_page = request.args.get('per_page', 20, type=int)  # Por defecto 20 registros por página
     
@@ -221,6 +222,10 @@ def list_propiedades():
     # Filtrar por copropiedad si se especificó
     if copropiedad_id:
         query = query.filter_by(copropiedad_id=copropiedad_id)
+
+        # Filtrar por término de búsqueda si se proporcionó
+    if search_term:
+        query = query.filter(PropiedadData.inmueble.ilike(f'%{search_term}%'))
     
      # Paginar los resultados
     pagination = query.paginate(page=page, per_page=per_page, error_out=False)
@@ -235,6 +240,7 @@ def list_propiedades():
         propiedades=propiedades,
         copropiedades=copropiedades,
         copropiedad_id=copropiedad_id,
+        search_term=search_term,
         pagination=pagination,
         per_page=per_page
     )
@@ -244,65 +250,65 @@ def list_propiedades():
 def edit_propiedad(id):
     propiedad = PropiedadData.query.get_or_404(id)
     form = DataEntryForm(obj=propiedad)
-    
-    # Si la propiedad tiene una copropiedad asignada, seleccionarla en el formulario
+      
+   # Si la propiedad tiene una copropiedad asignada, seleccionarla en el formulario
     if propiedad.copropiedad:
         form.copropiedad.data = propiedad.copropiedad
-    
-        # Añadir registro de depuración
-    if request.method == 'POST':
-        print("Formulario enviado por POST")
-        print(f"CSRF Token presente: {'csrf_token' in request.form}")
-        print(f"Formulario válido: {form.validate()}")
-        if not form.validate():
-            print(f"Errores: {form.errors}")
+
+    # Para usuarios no administradores, solo permitir editar ciertos campos
+    is_admin = current_user.is_admin
     
     if form.validate_on_submit():
         try:
-            # Actualizar los datos de la propiedad
-            propiedad.inmueble = form.inmueble.data
-            propiedad.modelo = form.modelo.data
-            propiedad.principal = form.principal.data
-            propiedad.agrupar_por = form.agrupar_por.data
-            propiedad.matricula = form.matricula.data
-            propiedad.telefono = form.telefono.data
-            propiedad.coeficiente = form.coeficiente.data
-            propiedad.tipo_persona = form.tipo_persona.data
+            # Si es administrador, actualizar todos los campos
+            if is_admin:
+                propiedad.inmueble = form.inmueble.data
+                propiedad.modelo = form.modelo.data
+                propiedad.principal = form.principal.data
+                propiedad.agrupar_por = form.agrupar_por.data
+                propiedad.matricula = form.matricula.data
+                propiedad.telefono = form.telefono.data
+                propiedad.coeficiente = form.coeficiente.data
+                propiedad.tipo_persona = form.tipo_persona.data
+
+                # Información del propietario/responsable
+                if form.tipo_persona.data == 'Natural':
+                    propiedad.primer_nombre = form.primer_nombre.data
+                    propiedad.segundo_nombre = form.segundo_nombre.data
+                    propiedad.primer_apellido = form.primer_apellido.data
+                    propiedad.segundo_apellido = form.segundo_apellido.data
+                    propiedad.razon_social = None
+                else:
+                    propiedad.primer_nombre = None
+                    propiedad.segundo_nombre = None
+                    propiedad.primer_apellido = None
+                    propiedad.segundo_apellido = None
+                    propiedad.razon_social = form.razon_social.data
+
+                # Identificación y contacto
+                propiedad.tipo_id = form.tipo_id.data
+                propiedad.identificacion = form.identificacion.data
+                propiedad.dv = form.dv.data
+                propiedad.email = form.email.data
+                propiedad.direccion = form.direccion.data
+
+                # Actualizar la copropiedad si se seleccionó una
+                if form.copropiedad.data:
+                    propiedad.copropiedad_id = form.copropiedad.data.id
             
-            # Información del propietario/responsable
-            if form.tipo_persona.data == 'Natural':
-                propiedad.primer_nombre = form.primer_nombre.data
-                propiedad.segundo_nombre = form.segundo_nombre.data
-                propiedad.primer_apellido = form.primer_apellido.data
-                propiedad.segundo_apellido = form.segundo_apellido.data
-                propiedad.razon_social = None
-            else:
-                propiedad.primer_nombre = None
-                propiedad.segundo_nombre = None
-                propiedad.primer_apellido = None
-                propiedad.segundo_apellido = None
-                propiedad.razon_social = form.razon_social.data
+                    # Para todos los usuarios (incluyendo no administradores)
+                    # Información financiera (solo fecha_ingreso y periodo_de_gracia para no administradores)
+                    propiedad.fecha_ingreso = form.fecha_ingreso.data
+                    propiedad.periodo_de_gracia = form.periodo_de_gracia.data
             
-            # Identificación y contacto
-            propiedad.tipo_id = form.tipo_id.data
-            propiedad.identificacion = form.identificacion.data
-            propiedad.dv = form.dv.data
-            propiedad.email = form.email.data
-            propiedad.direccion = form.direccion.data
-            
-            # Información financiera
-            propiedad.fecha_inicio_facturacion = form.fecha_inicio_facturacion.data
-            propiedad.fecha_ingreso = form.fecha_ingreso.data
-            propiedad.periodo_de_gracia = form.periodo_de_gracia.data
-            propiedad.valor_a_pagar_inmueble = form.valor_a_pagar_inmueble.data
-            propiedad.valor_presupuesto = form.valor_presupuesto.data
-            propiedad.valor_a_pagar_constructora = form.valor_a_pagar_constructora.data
-            propiedad.valor_a_pagar_propietario = form.valor_a_pagar_propietario.data
-            
-            # Actualizar la copropiedad si se seleccionó una
-            if form.copropiedad.data:
-                propiedad.copropiedad_id = form.copropiedad.data.id
-            
+            # Solo administradores pueden editar estos campos
+            if is_admin:
+                propiedad.fecha_inicio_facturacion = form.fecha_inicio_facturacion.data
+                propiedad.valor_presupuesto = form.valor_presupuesto.data
+                propiedad.valor_a_pagar_inmueble = form.valor_a_pagar_inmueble.data
+                propiedad.valor_a_pagar_constructora = form.valor_a_pagar_constructora.data
+                propiedad.valor_a_pagar_propietario = form.valor_a_pagar_propietario.data
+
             db.session.commit()
             flash(f'Inmueble {propiedad.inmueble} actualizado exitosamente.', 'success')
             return redirect(url_for('main.list_propiedades'))
@@ -310,7 +316,7 @@ def edit_propiedad(id):
             db.session.rollback()
             flash(f'Error al actualizar los datos: {str(e)}', 'danger')
     
-    return render_template('propiedades/edit.html', title='Editar Inmueble', form=form, propiedad=propiedad)
+    return render_template('propiedades/edit.html', title='Editar Inmueble', form=form, propiedad=propiedad, is_admin=is_admin)
 
 @main_bp.route('/download_excel_data')
 @login_required

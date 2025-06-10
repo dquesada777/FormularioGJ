@@ -6,8 +6,35 @@
     
     <form method="post">
         {{ form.hidden_tag() }}
-        
-        <div class="card mb-4">
+        {% if not is_admin %}
+        <input type="hidden" name="inmueble" value="{{ propiedad.inmueble }}">
+        <input type="hidden" name="modelo" value="{{ propiedad.modelo }}">
+        <input type="hidden" name="principal" value="{{ propiedad.principal }}">
+        <input type="hidden" name="agrupar_por" value="{{ propiedad.agrupar_por }}">
+        <input type="hidden" name="matricula" value="{{ propiedad.matricula }}">
+        <input type="hidden" name="telefono" value="{{ propiedad.telefono }}">
+        <input type="hidden" name="coeficiente" value="{{ propiedad.coeficiente }}">
+        <input type="hidden" name="tipo_persona" value="{{ propiedad.tipo_persona }}">
+        <input type="hidden" name="primer_nombre" value="{{ propiedad.primer_nombre }}">
+        <input type="hidden" name="segundo_nombre" value="{{ propiedad.segundo_nombre }}">
+        <input type="hidden" name="primer_apellido" value="{{ propiedad.primer_apellido }}">
+        <input type="hidden" name="segundo_apellido" value="{{ propiedad.segundo_apellido }}">
+        <input type="hidden" name="razon_social" value="{{ propiedad.razon_social }}">
+        <input type="hidden" name="tipo_id" value="{{ propiedad.tipo_id }}">
+        <input type="hidden" name="identificacion" value="{{ propiedad.identificacion }}">
+        <input type="hidden" name="dv" value="{{ propiedad.dv }}">
+        <input type="hidden" name="email" value="{{ propiedad.email }}">
+        <input type="hidden" name="direccion" value="{{ propiedad.direccion }}">
+        <input type="hidden" name="fecha_inicio_facturacion" value="{{ propiedad.fecha_inicio_facturacion.strftime('%Y-%m-%d') if propiedad.fecha_inicio_facturacion else '' }}">
+        <input type="hidden" name="valor_presupuesto" value="{{ propiedad.valor_presupuesto }}">
+        <input type="hidden" name="valor_a_pagar_inmueble" value="{{ propiedad.valor_a_pagar_inmueble }}">
+        <input type="hidden" name="valor_a_pagar_constructora" value="{{ propiedad.valor_a_pagar_constructora }}">
+        <input type="hidden" name="valor_a_pagar_propietario" value="{{ propiedad.valor_a_pagar_propietario }}">
+        {% if propiedad.copropiedad %}
+        <input type="hidden" name="copropiedad" value="{{ propiedad.copropiedad_id }}">
+        {% endif %}
+        {% endif %}    
+       <div class="card mb-4">
             <div class="card-header">
                 <h3>Información del Inmueble</h3>
             </div>
@@ -16,13 +43,21 @@
                     <div class="col-md-6">
                         <div class="mb-3">
                             {{ form.copropiedad.label(class="form-label") }}
-                            {{ form.copropiedad(class="form-control") }}
+                             {% if is_admin %}
+                                {{ form.copropiedad(class="form-control") }}
+                            {% else %}
+                                <input type="text" class="form-control" value="{{ propiedad.copropiedad.nombre if propiedad.copropiedad else 'No asignada' }}" readonly>
+                            {% endif %}
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="mb-3">
                             {{ form.inmueble.label(class="form-label") }}
-                            {{ form.inmueble(class="form-control") }}
+                            {% if is_admin %}
+                                {{ form.inmueble(class="form-control") }}
+                            {% else %}
+                                <input type="text" class="form-control" value="{{ propiedad.inmueble }}" readonly>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -30,19 +65,31 @@
                     <div class="col-md-4">
                         <div class="mb-3">
                             {{ form.modelo.label(class="form-label") }}
-                            {{ form.modelo(class="form-control") }}
+                            {% if is_admin %}
+                                {{ form.modelo(class="form-control") }}
+                            {% else %}
+                                <input type="text" class="form-control" value="{{ propiedad.modelo }}" readonly>
+                            {% endif %}
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="mb-3">
                             {{ form.agrupar_por.label(class="form-label") }}
-                            {{ form.agrupar_por(class="form-control") }}
+                            {% if is_admin %}
+                                {{ form.agrupar_por(class="form-control") }}
+                            {% else %}
+                                <input type="text" class="form-control" value="{{ propiedad.agrupar_por }}" readonly>
+                            {% endif %}
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="mb-3 form-check mt-4">
                             {{ form.principal(class="form-check-input") }}
-                            {{ form.principal.label(class="form-check-label") }}
+                            {% if is_admin %}
+                                {{ form.principal(class="form-check-input") }}
+                            {% else %}
+                                <input type="checkbox" class="form-check-input" {% if propiedad.principal %}checked{% endif %} disabled>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -50,13 +97,21 @@
                     <div class="col-md-6">
                         <div class="mb-3">
                             {{ form.matricula.label(class="form-label") }}
-                            {{ form.matricula(class="form-control") }}
+                            {% if is_admin %}
+                                {{ form.matricula(class="form-control") }}
+                            {% else %}
+                                <input type="text" class="form-control" value="{{ propiedad.matricula }}" readonly>
+                            {% endif %}
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="mb-3">
                             {{ form.coeficiente.label(class="form-label") }}
-                            {{ form.coeficiente(class="form-control") }}
+                            {% if is_admin %}
+                                {{ form.coeficiente(class="form-control") }}
+                            {% else %}
+                                <input type="text" class="form-control" value="{{ propiedad.coeficiente }}" readonly>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -70,21 +125,32 @@
             <div class="card-body">
                 <div class="mb-3">
                     {{ form.tipo_persona.label(class="form-label") }}
-                    {{ form.tipo_persona(class="form-control") }}
+                    {% if is_admin %}
+                        {{ form.tipo_persona(class="form-control") }}
+                    {% else %}
+                        <input type="text" class="form-control" value="{{ propiedad.tipo_persona }}" readonly>
+                    {% endif %}
                 </div>
-                
                 <div id="personaNaturalFields" style="display: {{ 'block' if form.tipo_persona.data == 'Natural' else 'none' }};">
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
                                 {{ form.primer_nombre.label(class="form-label") }}
-                                {{ form.primer_nombre(class="form-control") }}
+                                {% if is_admin %}
+                                    {{ form.primer_nombre(class="form-control") }}
+                                {% else %}
+                                    <input type="text" class="form-control" value="{{ propiedad.primer_nombre }}" readonly>
+                                {% endif %}
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="mb-3">
                                 {{ form.segundo_nombre.label(class="form-label") }}
-                                {{ form.segundo_nombre(class="form-control") }}
+                                {% if is_admin %}
+                                    {{ form.segundo_nombre(class="form-control") }}
+                                {% else %}
+                                    <input type="text" class="form-control" value="{{ propiedad.segundo_nombre }}" readonly>
+                                {% endif %}   
                             </div>
                         </div>
                     </div>
@@ -92,13 +158,21 @@
                         <div class="col-md-6">
                             <div class="mb-3">
                                 {{ form.primer_apellido.label(class="form-label") }}
-                                {{ form.primer_apellido(class="form-control") }}
+                                {% if is_admin %}
+                                    {{ form.primer_apellido(class="form-control") }}
+                                {% else %}
+                                    <input type="text" class="form-control" value="{{ propiedad.primer_apellido }}" readonly>
+                                {% endif %}
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="mb-3">
                                 {{ form.segundo_apellido.label(class="form-label") }}
-                                {{ form.segundo_apellido(class="form-control") }}
+                                {% if is_admin %}
+                                    {{ form.segundo_apellido(class="form-control") }}
+                                {% else %}
+                                    <input type="text" class="form-control" value="{{ propiedad.segundo_apellido }}" readonly>
+                                {% endif %}
                             </div>
                         </div>
                     </div>
@@ -107,7 +181,11 @@
                 <div id="personaJuridicaFields" style="display: {{ 'block' if form.tipo_persona.data == 'Jurídica' else 'none' }};">
                     <div class="mb-3">
                         {{ form.razon_social.label(class="form-label") }}
-                        {{ form.razon_social(class="form-control") }}
+                        {% if is_admin %}
+                            {{ form.razon_social(class="form-control") }}
+                        {% else %}
+                            <input type="text" class="form-control" value="{{ propiedad.razon_social }}" readonly>
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -122,19 +200,31 @@
                     <div class="col-md-4">
                         <div class="mb-3">
                             {{ form.tipo_id.label(class="form-label") }}
-                            {{ form.tipo_id(class="form-control") }}
+                            {% if is_admin %}
+                                {{ form.tipo_id(class="form-control") }}
+                            {% else %}
+                                <input type="text" class="form-control" value="{{ propiedad.tipo_id }}" readonly>
+                            {% endif %}
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="mb-3">
                             {{ form.identificacion.label(class="form-label") }}
-                            {{ form.identificacion(class="form-control") }}
+                            {% if is_admin %}
+                                {{ form.identificacion(class="form-control") }}
+                            {% else %}
+                                <input type="text" class="form-control" value="{{ propiedad.identificacion }}" readonly>
+                            {% endif %}
                         </div>
                     </div>
                     <div class="col-md-2">
                         <div class="mb-3">
                             {{ form.dv.label(class="form-label") }}
-                            {{ form.dv(class="form-control") }}
+                            {% if is_admin %}
+                                {{ form.dv(class="form-control") }}
+                            {% else %}
+                                <input type="text" class="form-control" value="{{ propiedad.dv }}" readonly>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -142,19 +232,31 @@
                     <div class="col-md-6">
                         <div class="mb-3">
                             {{ form.telefono.label(class="form-label") }}
-                            {{ form.telefono(class="form-control") }}
+                            {% if is_admin %}
+                                {{ form.telefono(class="form-control") }}
+                            {% else %}
+                                <input type="text" class="form-control" value="{{ propiedad.telefono }}" readonly>
+                            {% endif %}
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="mb-3">
                             {{ form.email.label(class="form-label") }}
-                            {{ form.email(class="form-control") }}
+                            {% if is_admin %}
+                                {{ form.email(class="form-control") }}
+                            {% else %}
+                                <input type="email" class="form-control" value="{{ propiedad.email }}" readonly>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
                 <div class="mb-3">
                     {{ form.direccion.label(class="form-label") }}
-                    {{ form.direccion(class="form-control", rows=3) }}
+                    {% if is_admin %}
+                        {{ form.direccion(class="form-control", rows=3) }}
+                    {% else %}
+                        <textarea class="form-control" rows="3" readonly>{{ propiedad.direccion }}</textarea>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -182,13 +284,21 @@
                     <div class="col-md-6">
                         <div class="mb-3">
                             {{ form.fecha_inicio_facturacion.label(class="form-label") }}
-                            {{ form.fecha_inicio_facturacion(class="form-control", type="date") }}
+                            {% if is_admin %}
+                                {{ form.fecha_inicio_facturacion(class="form-control", type="date") }}
+                            {% else %}
+                                <input type="date" class="form-control" id="fecha_inicio_facturacion" value="{{ propiedad.fecha_inicio_facturacion.strftime('%Y-%m-%d') if propiedad.fecha_inicio_facturacion else '' }}" readonly>
+                            {% endif %}
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="mb-3">
                             {{ form.valor_presupuesto.label(class="form-label") }}
-                            {{ form.valor_presupuesto(class="form-control") }}
+                            {% if is_admin %}
+                                {{ form.valor_presupuesto(class="form-control") }}
+                            {% else %}
+                                <input type="text" class="form-control" id="valor_presupuesto" value="{{ propiedad.valor_presupuesto }}" readonly>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -196,19 +306,31 @@
                     <div class="col-md-4">
                         <div class="mb-3">
                             {{ form.valor_a_pagar_inmueble.label(class="form-label") }}
-                            {{ form.valor_a_pagar_inmueble(class="form-control") }}
+                            {% if is_admin %}
+                                {{ form.valor_a_pagar_inmueble(class="form-control") }}
+                            {% else %}
+                                <input type="text" class="form-control" id="valor_a_pagar_inmueble" value="{{ propiedad.valor_a_pagar_inmueble }}" readonly>
+                            {% endif %}
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="mb-3">
                             {{ form.valor_a_pagar_constructora.label(class="form-label") }}
-                            {{ form.valor_a_pagar_constructora(class="form-control") }}
+                            {% if is_admin %}
+                                {{ form.valor_a_pagar_constructora(class="form-control") }}
+                            {% else %}
+                                <input type="text" class="form-control" id="valor_a_pagar_constructora" value="{{ propiedad.valor_a_pagar_constructora }}" readonly>
+                            {% endif %}
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="mb-3">
                             {{ form.valor_a_pagar_propietario.label(class="form-label") }}
-                            {{ form.valor_a_pagar_propietario(class="form-control") }}
+                            {% if is_admin %}
+                                {{ form.valor_a_pagar_propietario(class="form-control") }}
+                            {% else %}
+                                <input type="text" class="form-control" id="valor_a_pagar_propietario" value="{{ propiedad.valor_a_pagar_propietario }}" readonly>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -221,6 +343,7 @@
         </div>
     </form>
 </div>
+{% endblock %}
 
 {% block scripts_extra %}
 <script>
@@ -229,7 +352,8 @@
         const tipoPersona = document.getElementById('tipo_persona');
         const personaNaturalFields = document.getElementById('personaNaturalFields');
         const personaJuridicaFields = document.getElementById('personaJuridicaFields');
-        
+        // Solo ejecutar si el usuario es administrador y puede editar estos campos
+        {% if is_admin %}
         function togglePersonFields() {
             if (tipoPersona.value === 'Natural') {
                 personaNaturalFields.style.display = 'block';
@@ -241,7 +365,9 @@
         }
         
         tipoPersona.addEventListener('change', togglePersonFields);
-        
+        togglePersonFields(); // Ejecutar al cargar la página
+ {% endif %}
+                
         // Referencias a los campos del formulario
         const fechaIngreso = document.getElementById('fecha_ingreso');
         const periodoGracia = document.getElementById('periodo_de_gracia');
@@ -314,17 +440,13 @@
         });
         
         periodoGracia.addEventListener('input', calcularFechaInicioFacturacion);
-        
         coeficiente.addEventListener('input', calcularValorPagarInmueble);
         valorPresupuesto.addEventListener('input', calcularValorPagarInmueble);
-        
+              
         // Ejecutar cálculos iniciales si hay valores preexistentes
         calcularFechaInicioFacturacion();
         calcularValorPagarInmueble();
         
-        // Ejecutar togglePersonFields inicialmente para configurar la visualización correcta
-        togglePersonFields();
-    });
+   });
 </script>
-{% endblock %}
 {% endblock %}
