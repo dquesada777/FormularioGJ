@@ -125,7 +125,7 @@ def generate_pdf_report(copropiedad_id):
     # Tabla de inmuebles
     if propiedades:
         # Encabezados
-        data = [["Inmueble", "Matrícula", "Propietario", "Fecha Ingreso", "Fecha Inicio Facturación"]]
+        data = [["Inmueble", "Periodo de Gracia", "Propietario", "Fecha Ingreso", "Fecha Inicio Facturación"]]
         
         # Datos
         for prop in propiedades:
@@ -135,7 +135,7 @@ def generate_pdf_report(copropiedad_id):
             
             data.append([
                 prop.inmueble,
-                prop.matricula,
+                prop.periodo_de_gracia,
                 propietario.strip(),
                 fecha_ingreso,
                 fecha_facturacion

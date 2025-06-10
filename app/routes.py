@@ -456,6 +456,10 @@ def upload_excel():
 @login_required
 def generate_report():
     form = ReportForm()
+
+    # Obtener todas las copropiedades para el campo de búsqueda
+    copropiedades = Copropiedad.query.order_by(Copropiedad.nombre).all()
+
     if form.validate_on_submit():
         try:
             # Generar el reporte PDF
@@ -473,7 +477,7 @@ def generate_report():
         except Exception as e:
             flash(f'Error al generar el reporte: {str(e)}', 'danger')
     
-    return render_template('report_form.html', title='Generar Reporte', form=form)
+    return render_template('report_form.html', title='Generar Reporte de Inmuebles', form=form, copropiedades=copropiedades)
 
 @main_bp.route('/admin_report', methods=['GET', 'POST'])
 @login_required
