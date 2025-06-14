@@ -196,7 +196,10 @@
     <div class="col-md-6">
         <div class="mb-3">
             {{ form.valor_a_pagar_inmueble.label(class="form-label") }}
-            {{ form.valor_a_pagar_inmueble(class="form-control") }}
+            <div class="input-group">
+                <span class="input-group-text">$</span>
+                {{ form.valor_a_pagar_inmueble(class="form-control", onchange="formatCurrency(this)") }}
+            </div>
             {% if form.valor_a_pagar_inmueble.errors %}
                 <div class="invalid-feedback">
                     {% for error in form.valor_a_pagar_inmueble.errors %}
@@ -209,7 +212,10 @@
     <div class="col-md-6">
         <div class="mb-3">
             {{ form.valor_presupuesto.label(class="form-label") }}
-            {{ form.valor_presupuesto(class="form-control") }}
+            <div class="input-group">
+                <span class="input-group-text">$</span>
+                {{ form.valor_presupuesto(class="form-control", onchange="formatCurrency(this)") }}
+            </div>
             {% if form.valor_presupuesto.errors %}
                 <div class="invalid-feedback">
                     {% for error in form.valor_presupuesto.errors %}
@@ -225,7 +231,10 @@
     <div class="col-md-6">
         <div class="mb-3">
             {{ form.valor_a_pagar_constructora.label(class="form-label") }}
-            {{ form.valor_a_pagar_constructora(class="form-control") }}
+            <div class="input-group">
+                <span class="input-group-text">$</span>
+                {{ form.valor_a_pagar_constructora(class="form-control", onchange="formatCurrency(this)") }}
+            </div>
             {% if form.valor_a_pagar_constructora.errors %}
                 <div class="invalid-feedback">
                     {% for error in form.valor_a_pagar_constructora.errors %}
@@ -238,7 +247,10 @@
     <div class="col-md-6">
         <div class="mb-3">
             {{ form.valor_a_pagar_propietario.label(class="form-label") }}
-            {{ form.valor_a_pagar_propietario(class="form-control") }}
+            <div class="input-group">
+                <span class="input-group-text">$</span>
+                {{ form.valor_a_pagar_propietario(class="form-control", onchange="formatCurrency(this)") }}
+            </div>
             {% if form.valor_a_pagar_propietario.errors %}
                 <div class="invalid-feedback">
                     {% for error in form.valor_a_pagar_propietario.errors %}
@@ -264,6 +276,21 @@
 <!-- Añadido:los calculos, justo antes de cerrar el bloque content -->
 {% block scripts_extra %}
 <script>
+// Función para formatear valores monetarios
+function formatCurrency(input) {
+    // Eliminar cualquier carácter que no sea número
+    let value = input.value.replace(/[^\d]/g, '');
+    
+    // Convertir a entero (sin decimales)
+    value = parseInt(value) || 0;
+    
+    // Formatear como número entero con separador de miles
+    input.value = new Intl.NumberFormat('es-CO', {
+        style: 'decimal',
+        maximumFractionDigits: 0
+    }).format(value);
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     // Referencias a los campos del formulario
     const fechaIngreso = document.getElementById('fecha_ingreso');
@@ -276,6 +303,13 @@ document.addEventListener('DOMContentLoaded', function() {
     
     const valorPagarConstructora = document.getElementById('valor_a_pagar_constructora');
     const valorPagarPropietario = document.getElementById('valor_a_pagar_propietario');
+
+    // Formatear campos monetarios existentes
+    [valorPresupuesto, valorPagarInmueble, valorPagarConstructora, valorPagarPropietario].forEach(field => {
+        if (field.value) {
+            formatCurrency(field);
+        }
+    });
 
     // Función para calcular la fecha de inicio de facturación
     function calcularFechaInicioFacturacion() {
@@ -291,30 +325,40 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    // Función para obtener el valor numérico de un campo formateado
+    function getNumericValue(field) {
+        return parseFloat(field.value.replace(/[^\d]/g, '')) || 0;
+    }
+
     // Función para calcular el valor a pagar del inmueble
     function calcularValorPagarInmueble() {
         if (coeficiente.value && valorPresupuesto.value) {
             const coef = parseFloat(coeficiente.value);
-            const presupuesto = parseFloat(valorPresupuesto.value);
-            valorPagarInmueble.value = (coef * presupuesto/100).toFixed(2);
+            const presupuesto = getNumericValue(valorPresupuesto);
+            const resultado = Math.round((presupuesto * coef) / 100);
+            
+            // Asignar el valor y formatear
+            valorPagarInmueble.value = resultado;
+            formatCurrency(valorPagarInmueble);
+            
             calcularValorPagarConstructora();
         }
     }
 
     // Función para calcular el valor a pagar a la constructora
     function calcularValorPagarConstructora() {
-        if (valorPagarInmueble.value && fechaIngreso.value && fechaInicioFacturacion.value) {
-            const valorInmueble = parseFloat(valorPagarInmueble.value);
-            const fechaIng = new Date(fechaIngreso.value);
+        if (valorPagarInmueble.value && fechaInicioFacturacion.value) {
+            const valorInmueble = getNumericValue(valorPagarInmueble);
             const fechaFact = new Date(fechaInicioFacturacion.value);
             
-            // Calcular la diferencia en días
-            const diffTime = Math.abs(fechaFact - fechaIng);
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            // Calcular la fecha de inicio de facturación - 1 día
+            const fechaFactMenos1 = new Date(fechaFact);
+            fechaFactMenos1.setDate(fechaFactMenos1.getDate() - 1);
             
-            // Calcular el valor a pagar a la constructora
-            const valorConstructora = (valorInmueble / 30) * diffDays;
-            valorPagarConstructora.value = valorConstructora.toFixed(2);
+            // Calcular el valor a pagar a la constructora (redondeado a entero)
+            const valorConstructora = Math.round((valorInmueble / 30) * fechaFactMenos1.getDate());
+            valorPagarConstructora.value = valorConstructora;
+            formatCurrency(valorPagarConstructora);
             
             // Calcular el valor a pagar al propietario
             calcularValorPagarPropietario();
@@ -324,9 +368,12 @@ document.addEventListener('DOMContentLoaded', function() {
     // Función para calcular el valor a pagar al propietario
     function calcularValorPagarPropietario() {
         if (valorPagarInmueble.value && valorPagarConstructora.value) {
-            const valorInmueble = parseFloat(valorPagarInmueble.value);
-            const valorConstructora = parseFloat(valorPagarConstructora.value);
-            valorPagarPropietario.value = (valorInmueble - valorConstructora).toFixed(2);
+            const valorInmueble = getNumericValue(valorPagarInmueble);
+            const valorConstructora = getNumericValue(valorPagarConstructora);
+            const resultado = Math.round(valorInmueble - valorConstructora);
+            
+            valorPagarPropietario.value = resultado;
+            formatCurrency(valorPagarPropietario);
         }
     }
 
@@ -339,7 +386,10 @@ document.addEventListener('DOMContentLoaded', function() {
     periodoGracia.addEventListener('input', calcularFechaInicioFacturacion);
     
     coeficiente.addEventListener('input', calcularValorPagarInmueble);
-    valorPresupuesto.addEventListener('input', calcularValorPagarInmueble);
+    valorPresupuesto.addEventListener('input', function() {
+        formatCurrency(this);
+        calcularValorPagarInmueble();
+    });
     
     // Ejecutar cálculos iniciales si hay valores preexistentes
     calcularFechaInicioFacturacion();

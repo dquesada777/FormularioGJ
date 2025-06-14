@@ -69,6 +69,8 @@ class AdminReportForm(FlaskForm):
     month_choices = [(m, calendar.month_name[m]) for m in range(1, 13)]
     month = SelectField('Mes', choices=month_choices, validators=[DataRequired()], default=datetime.now().month)
     
+    valor_presupuesto = DecimalField('Valor Presupuesto', validators=[Optional()], places=0)
+    
     submit = SubmitField('Generar Reporte Excel')
    
 class DataEntryForm(FlaskForm):
@@ -128,10 +130,10 @@ class DataEntryForm(FlaskForm):
     fecha_inicio_facturacion = DateField('Fecha Inicio Facturación', format='%Y-%m-%d', validators=[Optional()])
     fecha_ingreso = DateField('Fecha Ingreso', format='%Y-%m-%d', validators=[Optional()])
     periodo_de_gracia = FloatField('Periodo de Gracia (días)', validators=[Optional(), NumberRange(min=0)])
-    valor_a_pagar_inmueble = DecimalField('Valor a Pagar Inmueble', validators=[Optional()], places=2)
-    valor_presupuesto = DecimalField('Valor Presupuesto', validators=[Optional()], places=2)
-    valor_a_pagar_constructora = DecimalField('Valor a Pagar Constructora', validators=[Optional()], places=2)
-    valor_a_pagar_propietario = DecimalField('Valor a Pagar Propietario', validators=[Optional()], places=2)
+    valor_a_pagar_inmueble = DecimalField('Valor a Pagar Inmueble ($)', validators=[Optional()], places=0)
+    valor_presupuesto = DecimalField('Valor Presupuesto ($)', validators=[Optional()], places=0)
+    valor_a_pagar_constructora = DecimalField('Valor a Pagar Constructora ($)', validators=[Optional()], places=0)
+    valor_a_pagar_propietario = DecimalField('Valor a Pagar Propietario ($)', validators=[Optional()], places=0)
     
     submit = SubmitField('Guardar Datos')
 

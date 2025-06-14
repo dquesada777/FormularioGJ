@@ -338,7 +338,7 @@
         </div>
         
         <div class="d-grid gap-2 mb-4">
-            {{ form.submit(class="btn btn-primary btn-lg") }}
+            {{ form.submit(class="btn btn-primary btn-lg", id="submitBtn") }}
             <a href="{{ url_for('main.list_propiedades') }}" class="btn btn-secondary">Cancelar</a>
         </div>
     </form>
@@ -398,26 +398,24 @@
         function calcularValorPagarInmueble() {
             if (coeficiente.value && valorPresupuesto.value) {
                 const coef = parseFloat(coeficiente.value);
-                const presupuesto = parseFloat(valorPresupuesto.value);
-                valorPagarInmueble.value = (coef * presupuesto/100).toFixed(2);
+                const presupuesto = parseFloat(valorPresupuesto.value.replace(/[^\d]/g, ''));
+                valorPagarInmueble.value = Math.round((presupuesto * coef) / 100);
                 calcularValorPagarConstructora();
             }
         }
 
         // Función para calcular el valor a pagar a la constructora
         function calcularValorPagarConstructora() {
-            if (valorPagarInmueble.value && fechaIngreso.value && fechaInicioFacturacion.value) {
-                const valorInmueble = parseFloat(valorPagarInmueble.value);
-                const fechaIng = new Date(fechaIngreso.value);
+            if (valorPagarInmueble.value && fechaInicioFacturacion.value) {
+                const valorInmueble = parseFloat(valorPagarInmueble.value.replace(/[^\d]/g, ''));
                 const fechaFact = new Date(fechaInicioFacturacion.value);
                 
-                // Calcular la diferencia en días
-                const diffTime = Math.abs(fechaFact - fechaIng);
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                // Obtener el día del mes de la fecha de inicio de facturación
+                const diaFacturacion = fechaFact.getDate();
                 
-                // Calcular el valor a pagar a la constructora
-                const valorConstructora = (valorInmueble / 30) * diffDays;
-                valorPagarConstructora.value = valorConstructora.toFixed(2);
+                // Calcular el valor a pagar a la constructora: (valor inmueble / 30) * (día facturación - 1)
+                const valorConstructora = Math.round((valorInmueble / 30) * (diaFacturacion - 0));
+                valorPagarConstructora.value = valorConstructora;
                 
                 // Calcular el valor a pagar al propietario
                 calcularValorPagarPropietario();
@@ -427,9 +425,9 @@
         // Función para calcular el valor a pagar al propietario
         function calcularValorPagarPropietario() {
             if (valorPagarInmueble.value && valorPagarConstructora.value) {
-                const valorInmueble = parseFloat(valorPagarInmueble.value);
-                const valorConstructora = parseFloat(valorPagarConstructora.value);
-                valorPagarPropietario.value = (valorInmueble - valorConstructora).toFixed(2);
+                const valorInmueble = parseFloat(valorPagarInmueble.value.replace(/[^\d]/g, ''));
+                const valorConstructora = parseFloat(valorPagarConstructora.value.replace(/[^\d]/g, ''));
+                valorPagarPropietario.value = Math.round(valorInmueble - valorConstructora);
             }
         }
 
@@ -447,6 +445,13 @@
         calcularFechaInicioFacturacion();
         calcularValorPagarInmueble();
         
+        // Asegurar que los valores calculados se envíen al backend
+        document.getElementById('submitBtn').addEventListener('click', function(e) {
+            // Recalcular todos los valores antes de enviar el formulario
+            calcularValorPagarInmueble();
+            calcularValorPagarConstructora();
+            calcularValorPagarPropietario();
+        });
    });
 </script>
 {% endblock %}

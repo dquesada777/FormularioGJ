@@ -30,6 +30,15 @@
                     </div>
                 </div>
                 
+                <div class="mb-3">
+                    {{ form.valor_presupuesto.label(class="form-label") }}
+                    <div class="input-group">
+                        <span class="input-group-text">$</span>
+                        {{ form.valor_presupuesto(class="form-control", placeholder="Ingrese valor sin decimales") }}
+                    </div>
+                    <small class="form-text text-muted">Ingrese el valor del presupuesto para recalcular todos los inmuebles.</small>
+                </div>
+                
                 <div class="d-grid mt-4">
                     {{ form.submit(class="btn btn-primary") }}
                 </div>

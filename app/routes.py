@@ -66,13 +66,15 @@ def submit_data():
             valor_a_pagar_inmueble = form.valor_a_pagar_inmueble.data
             
             if coeficiente and valor_presupuesto and not valor_a_pagar_inmueble:
-                valor_a_pagar_inmueble = coeficiente * valor_presupuesto
+                valor_a_pagar_inmueble = (valor_presupuesto * coeficiente) / 100
                 form.valor_a_pagar_inmueble.data = valor_a_pagar_inmueble
             
             # Calcular valor_a_pagar_constructora si no está establecido
             if fecha_ingreso and fecha_inicio_facturacion and valor_a_pagar_inmueble and not form.valor_a_pagar_constructora.data:
                 from datetime import timedelta
-                dias = (fecha_inicio_facturacion - fecha_ingreso).days
+                # Restar un día a la fecha de inicio de facturación
+                fecha_inicio_facturacion_menos_1 = fecha_inicio_facturacion - timedelta(days=1)
+                dias = (fecha_inicio_facturacion_menos_1 - fecha_ingreso).days
                 valor_a_pagar_constructora = (valor_a_pagar_inmueble / 30) * dias
                 form.valor_a_pagar_constructora.data = valor_a_pagar_constructora
             
@@ -495,6 +497,35 @@ def admin_report():
             year = int(form.year.data)
             month = int(form.month.data)
             
+            # Si se proporcionó un valor de presupuesto, actualizar todos los inmuebles
+            if form.valor_presupuesto.data:
+                # Construir la consulta base
+                query = PropiedadData.query
+                
+                # Filtrar por copropiedad si se especificó
+                if copropiedad_id:
+                    query = query.filter_by(copropiedad_id=copropiedad_id)
+                
+                # Actualizar el valor del presupuesto y recalcular los valores
+                propiedades = query.all()
+                for prop in propiedades:
+                    prop.valor_presupuesto = int(form.valor_presupuesto.data)
+                    # Recalcular valor_a_pagar_inmueble basado en el coeficiente
+                    if prop.coeficiente:
+                        # Aplicar la fórmula correcta: (Valor_presupuesto * coeficiente)/100
+                        prop.valor_a_pagar_inmueble = int((float(form.valor_presupuesto.data) * prop.coeficiente) / 100)
+                        # Recalcular valor_a_pagar_propietario y valor_a_pagar_constructora
+                        if prop.fecha_inicio_facturacion:
+                            # Obtener el día del mes de la fecha de inicio de facturación
+                            dia_facturacion = prop.fecha_inicio_facturacion.day
+                            # Calcular el valor a pagar a la constructora: (valor inmueble / 30) * (día facturación - 1)
+                            prop.valor_a_pagar_constructora = int((prop.valor_a_pagar_inmueble / 30) * (dia_facturacion - 1))
+                            prop.valor_a_pagar_propietario = int(prop.valor_a_pagar_inmueble - prop.valor_a_pagar_constructora)
+                
+                # Guardar los cambios en la base de datos
+                db.session.commit()
+                flash(f'Valor de presupuesto actualizado y recálculos realizados exitosamente.', 'success')
+            
             # Generar el reporte Excel
             excel_stream = generate_filtered_excel_report(copropiedad_id, year, month)
             
@@ -510,6 +541,7 @@ def admin_report():
                 mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
             )
         except Exception as e:
+            db.session.rollback()
             flash(f'Error al generar el reporte: {str(e)}', 'danger')
     
     return render_template('admin_report.html', title='Reporte Financiero', form=form)

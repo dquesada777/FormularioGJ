@@ -18,7 +18,7 @@ def generate_filtered_excel_report(copropiedad_id=None, year=None, month=None):
     """Genera un archivo Excel con datos filtrados por copropiedad, año y mes
        Solo accesible para administradores"""
     
-# Crear un nuevo libro de trabajo de Excel
+    # Crear un nuevo libro de trabajo de Excel
     workbook = openpyxl.Workbook()
     sheet = workbook.active
     sheet.title = "Reporte Financiero"
@@ -53,6 +53,9 @@ def generate_filtered_excel_report(copropiedad_id=None, year=None, month=None):
     ]
     sheet.append(headers)
 
+    # Estilo para moneda colombiana
+    from openpyxl.styles import numbers
+
     # Datos
     for prop in propiedades:
         copropiedad_nombre = prop.copropiedad.nombre if prop.copropiedad else "No asignada"
@@ -72,6 +75,13 @@ def generate_filtered_excel_report(copropiedad_id=None, year=None, month=None):
             prop.valor_a_pagar_propietario
         ]
         sheet.append(row)
+    
+    # Aplicar formato de moneda colombiana a las columnas de valores
+    for row_idx in range(2, len(propiedades) + 2):  # +2 porque la primera fila es el encabezado y Excel comienza en 1
+        for col_idx in range(8, 12):  # Columnas 8-11 son las columnas de valores monetarios (índice base 1)
+            cell = sheet.cell(row=row_idx, column=col_idx)
+            if cell.value is not None:
+                cell.number_format = '"$"#,##0_-'
 
     # Ajustar el ancho de las columnas
     for col in sheet.columns:
@@ -171,6 +181,18 @@ def generate_excel_file():
         # Obtener todos los registros de la base de datos
         propiedades = PropiedadData.query.all()
         
+        # Actualizar los valores calculados antes de generar el Excel
+        for prop in propiedades:
+            if prop.valor_a_pagar_inmueble and prop.fecha_inicio_facturacion:
+                # Obtener el día del mes de la fecha de inicio de facturación
+                dia_facturacion = prop.fecha_inicio_facturacion.day
+                # Calcular el valor a pagar a la constructora: (valor inmueble / 30) * (día facturación - 1)
+                prop.valor_a_pagar_constructora = int((prop.valor_a_pagar_inmueble / 30) * (dia_facturacion - 1))
+                prop.valor_a_pagar_propietario = int(prop.valor_a_pagar_inmueble - prop.valor_a_pagar_constructora)
+        
+        # Guardar los cambios en la base de datos
+        db.session.commit()
+        
         # Crear un nuevo libro de trabajo de Excel
         workbook = openpyxl.Workbook()
         sheet = workbook.active
@@ -189,7 +211,6 @@ def generate_excel_file():
 
         # Datos
         for prop in propiedades:
-
             copropiedad_nombre = prop.copropiedad.nombre if prop.copropiedad else "No asignada"
 
             row = [

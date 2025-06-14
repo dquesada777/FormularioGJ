@@ -1,0 +1,13 @@
+[Unit]
+Description=Gunicorn instance to serve FormularioGJ
+After=network.target
+
+[Service]
+User=ubuntu
+Group=www-data
+WorkingDirectory=/home/ubuntu/FormularioGJ
+Environment="PATH=/home/ubuntu/FormularioGJ/env/bin"
+ExecStart=/home/ubuntu/FormularioGJ/env/bin/gunicorn --workers 3 --bind unix:FormularioGJ.sock -m 007 wsgi:app
+
+[Install]
+WantedBy=multi-user.target
