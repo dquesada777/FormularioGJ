@@ -44,6 +44,23 @@ def generate_filtered_excel_report(copropiedad_id=None, year=None, month=None):
     # Obtener los resultados
     propiedades = query.all()
     
+    # Crear diccionarios para almacenar valores calculados sin modificar la base de datos
+    valores_constructora = {}
+    valores_propietario = {}
+    
+    # Calcular los valores sin modificar los objetos de la base de datos
+    for prop in propiedades:
+        if prop.valor_a_pagar_inmueble and prop.fecha_inicio_facturacion:
+            # Obtener el día del mes de la fecha de inicio de facturación
+            dia_facturacion = prop.fecha_inicio_facturacion.day
+            # Calcular el valor a pagar a la constructora: (valor inmueble / 30) * (día facturación - 1)
+            valor_constructora = int((prop.valor_a_pagar_inmueble / 30) * (dia_facturacion - 1))
+            valor_propietario = int(prop.valor_a_pagar_inmueble - valor_constructora)
+            
+            # Guardar los valores calculados en los diccionarios
+            valores_constructora[prop.id] = valor_constructora
+            valores_propietario[prop.id] = valor_propietario
+    
     # Encabezados
     headers = [
         "Copropiedad", "Inmueble", "Matrícula", "Propietario", 
@@ -61,6 +78,10 @@ def generate_filtered_excel_report(copropiedad_id=None, year=None, month=None):
         copropiedad_nombre = prop.copropiedad.nombre if prop.copropiedad else "No asignada"
         propietario = prop.razon_social if prop.tipo_persona == 'Jurídica' else f"{prop.primer_nombre or ''} {prop.primer_apellido or ''}".strip()
         
+        # Usar los valores calculados si existen, de lo contrario usar los valores de la base de datos
+        valor_constructora = valores_constructora.get(prop.id, prop.valor_a_pagar_constructora)
+        valor_propietario = valores_propietario.get(prop.id, prop.valor_a_pagar_propietario)
+        
         row = [
             copropiedad_nombre,
             prop.inmueble,
@@ -71,8 +92,8 @@ def generate_filtered_excel_report(copropiedad_id=None, year=None, month=None):
             prop.periodo_de_gracia,
             prop.valor_presupuesto,
             prop.valor_a_pagar_inmueble,
-            prop.valor_a_pagar_constructora,
-            prop.valor_a_pagar_propietario
+            valor_constructora,
+            valor_propietario
         ]
         sheet.append(row)
     
@@ -181,17 +202,28 @@ def generate_excel_file():
         # Obtener todos los registros de la base de datos
         propiedades = PropiedadData.query.all()
         
-        # Actualizar los valores calculados antes de generar el Excel
+        # Crear diccionarios para almacenar valores calculados sin modificar la base de datos
+        valores_constructora = {}
+        valores_propietario = {}
+        
+        # Calcular los valores sin modificar los objetos de la base de datos
         for prop in propiedades:
             if prop.valor_a_pagar_inmueble and prop.fecha_inicio_facturacion:
-                # Obtener el día del mes de la fecha de inicio de facturación
-                dia_facturacion = prop.fecha_inicio_facturacion.day
-                # Calcular el valor a pagar a la constructora: (valor inmueble / 30) * (día facturación - 1)
-                prop.valor_a_pagar_constructora = int((prop.valor_a_pagar_inmueble / 30) * (dia_facturacion - 1))
-                prop.valor_a_pagar_propietario = int(prop.valor_a_pagar_inmueble - prop.valor_a_pagar_constructora)
-        
-        # Guardar los cambios en la base de datos
-        db.session.commit()
+                try:
+                    # Obtener el día del mes de la fecha de inicio de facturación
+                    dia_facturacion = prop.fecha_inicio_facturacion.day
+                    # Calcular el valor a pagar a la constructora: (valor inmueble / 30) * (día facturación - 1)
+                    valor_constructora = int((prop.valor_a_pagar_inmueble / 30) * (dia_facturacion - 1))
+                    valor_propietario = int(prop.valor_a_pagar_inmueble - valor_constructora)
+                    
+                    # Guardar los valores calculados en los diccionarios
+                    valores_constructora[prop.id] = valor_constructora
+                    valores_propietario[prop.id] = valor_propietario
+                except Exception as e:
+                    # Si hay un error en el cálculo, usar los valores existentes
+                    valores_constructora[prop.id] = prop.valor_a_pagar_constructora
+                    valores_propietario[prop.id] = prop.valor_a_pagar_propietario
+                    logging.error(f"Error al calcular valores para propiedad {prop.id}: {str(e)}")
         
         # Crear un nuevo libro de trabajo de Excel
         workbook = openpyxl.Workbook()
@@ -212,6 +244,10 @@ def generate_excel_file():
         # Datos
         for prop in propiedades:
             copropiedad_nombre = prop.copropiedad.nombre if prop.copropiedad else "No asignada"
+            
+            # Usar los valores calculados si existen, de lo contrario usar los valores de la base de datos
+            valor_constructora = valores_constructora.get(prop.id, prop.valor_a_pagar_constructora)
+            valor_propietario = valores_propietario.get(prop.id, prop.valor_a_pagar_propietario)
 
             row = [
                 prop.id, copropiedad_nombre,prop.inmueble, prop.modelo, prop.principal, prop.agrupar_por, prop.matricula,
@@ -219,7 +255,7 @@ def generate_excel_file():
                 prop.primer_apellido, prop.segundo_apellido, prop.razon_social, prop.tipo_id,
                 prop.identificacion, prop.dv, prop.email, prop.direccion, prop.fecha_inicio_facturacion,
                 prop.fecha_ingreso, prop.periodo_de_gracia, prop.valor_a_pagar_inmueble, prop.valor_presupuesto,
-                prop.valor_a_pagar_constructora, prop.valor_a_pagar_propietario
+                valor_constructora, valor_propietario
             ]
             sheet.append(row)
 
