@@ -262,7 +262,8 @@ def edit_propiedad(id):
     
     if form.validate_on_submit():
         try:
-            # Si es administrador, actualizar todos los campos
+
+            # Si es administrador, actualizar campos específicos de admin
             if is_admin:
                 propiedad.inmueble = form.inmueble.data
                 propiedad.modelo = form.modelo.data
@@ -271,37 +272,38 @@ def edit_propiedad(id):
                 propiedad.matricula = form.matricula.data
                 propiedad.telefono = form.telefono.data
                 propiedad.coeficiente = form.coeficiente.data
-                propiedad.tipo_persona = form.tipo_persona.data
-
-                # Información del propietario/responsable
-                if form.tipo_persona.data == 'Natural':
-                    propiedad.primer_nombre = form.primer_nombre.data
-                    propiedad.segundo_nombre = form.segundo_nombre.data
-                    propiedad.primer_apellido = form.primer_apellido.data
-                    propiedad.segundo_apellido = form.segundo_apellido.data
-                    propiedad.razon_social = None
-                else:
-                    propiedad.primer_nombre = None
-                    propiedad.segundo_nombre = None
-                    propiedad.primer_apellido = None
-                    propiedad.segundo_apellido = None
-                    propiedad.razon_social = form.razon_social.data
-
-                # Identificación y contacto
-                propiedad.tipo_id = form.tipo_id.data
-                propiedad.identificacion = form.identificacion.data
-                propiedad.dv = form.dv.data
-                propiedad.email = form.email.data
-                propiedad.direccion = form.direccion.data
-
+                
                 # Actualizar la copropiedad si se seleccionó una
                 if form.copropiedad.data:
                     propiedad.copropiedad_id = form.copropiedad.data.id
+                    
+                # Información financiera
+                propiedad.fecha_ingreso = form.fecha_ingreso.data
+                propiedad.periodo_de_gracia = form.periodo_de_gracia.data
             
-                    # Para todos los usuarios (incluyendo no administradores)
-                    # Información financiera (solo fecha_ingreso y periodo_de_gracia para no administradores)
-                    propiedad.fecha_ingreso = form.fecha_ingreso.data
-                    propiedad.periodo_de_gracia = form.periodo_de_gracia.data
+            # Campos que pueden editar todos los usuarios
+            propiedad.tipo_persona = form.tipo_persona.data
+            
+            # Información del propietario/responsable
+            if form.tipo_persona.data == 'Natural':
+                propiedad.primer_nombre = form.primer_nombre.data
+                propiedad.segundo_nombre = form.segundo_nombre.data
+                propiedad.primer_apellido = form.primer_apellido.data
+                propiedad.segundo_apellido = form.segundo_apellido.data
+                propiedad.razon_social = None
+            else:
+                propiedad.primer_nombre = None
+                propiedad.segundo_nombre = None
+                propiedad.primer_apellido = None
+                propiedad.segundo_apellido = None
+                propiedad.razon_social = form.razon_social.data
+
+            # Identificación y contacto
+            propiedad.tipo_id = form.tipo_id.data
+            propiedad.identificacion = form.identificacion.data
+            propiedad.dv = form.dv.data
+            propiedad.email = form.email.data
+            propiedad.direccion = form.direccion.data
             
             # Solo administradores pueden editar estos campos
             if is_admin:
